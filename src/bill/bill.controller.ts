@@ -1,5 +1,5 @@
 // src/bill/bill.controller.ts
-import { Controller, Post, Body, Req, UseGuards, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards, Get, Param, Patch } from '@nestjs/common';
 import { BillService } from './bill.service';
 import { CreateBillDto } from '../dto/bill.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -11,20 +11,27 @@ export class BillController {
   constructor(private readonly billService: BillService) {}
 
   @Post()
-  async createBill(@Body() dto: CreateBillDto, @Req() req: Request) {
-    const user = req.user as any;
-    return this.billService.createBill(user.userId, dto);
+  async createBill(@Body() body) {
+   return await this.billService.createBill(body)
   }
 
   @Get()
   async getAllBills(@Req() req: Request) {
-    const user = req.user as any;
-    return this.billService.getBillsByUser(user.userId);
+    const filter = req.query;
+    return this.billService.getBillsByUser(filter);
   }
 
-  @Get(':id')
-  async getBillById(@Param('id') id: string, @Req() req: Request) {
-    const user = req.user as any;
-    return this.billService.getBillById(id, user.userId);
+  @Get('/id')
+  async getBillById(@Req() request) {
+    
+    return this.billService.getBillById(request.query.id);
+  }
+
+
+  @Patch('update')
+  async updateBill(@Req() request, @Body() body) {
+    const filter  = request.query
+    console.log({request})
+    return this.billService.updateBill(filter, body);
   }
 }

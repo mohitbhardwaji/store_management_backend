@@ -2,6 +2,11 @@ import { Document, Types } from 'mongoose';
 export declare class Cart extends Document {
     userId: Types.ObjectId;
     products: any[];
+    payments: {
+        method: string;
+        amount: number;
+        transaction_id?: string;
+    }[];
 }
 export declare const CartSchema: import("mongoose").Schema<Cart, import("mongoose").Model<Cart, any, any, any, Document<unknown, any, Cart> & Cart & Required<{
     _id: unknown;

@@ -5,7 +5,7 @@ export declare class AuthService {
     private userModel;
     private jwtService;
     constructor(userModel: Model<UserDocument>, jwtService: JwtService);
-    register(email: string, password: string): Promise<any>;
+    register(email: string, password: string, role: string): Promise<any>;
     login(email: string, password: string): Promise<any>;
     getUser(userId: string): Promise<User | null>;
 }

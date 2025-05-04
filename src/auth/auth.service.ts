@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
 import { Model } from 'mongoose';
@@ -12,9 +12,15 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(email: string, password: string): Promise<any> {
+  async register(email: string, password: string, role: string): Promise<any> {
+    const allowedRoles = ['sales', 'owner', 'accounts', 'admin'];
+    
+    if (!allowedRoles.includes(role)) {
+      throw new BadRequestException(`Invalid role.`);
+    }
+  
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new this.userModel({ email, password: hashedPassword });
+    const newUser = new this.userModel({ email, password: hashedPassword, role });
     return newUser.save();
   }
 
@@ -24,7 +30,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user._id, email: user.email };
+    const payload = { sub: user._id, email: user.email,role:user.role };
     return {
       access_token: this.jwtService.sign(payload),
     };

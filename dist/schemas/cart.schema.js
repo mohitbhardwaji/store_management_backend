@@ -15,6 +15,7 @@ const mongoose_2 = require("mongoose");
 let Cart = class Cart extends mongoose_2.Document {
     userId;
     products;
+    payments;
 };
 exports.Cart = Cart;
 __decorate([
@@ -34,6 +35,18 @@ __decorate([
     ]),
     __metadata("design:type", Array)
 ], Cart.prototype, "products", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({
+        type: [
+            {
+                method: { type: String, required: true },
+                amount: { type: Number, required: true },
+                transaction_id: { type: String },
+            },
+        ],
+    }),
+    __metadata("design:type", Array)
+], Cart.prototype, "payments", void 0);
 exports.Cart = Cart = __decorate([
     (0, mongoose_1.Schema)({ timestamps: true })
 ], Cart);

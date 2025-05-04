@@ -26,9 +26,13 @@ let AuthService = class AuthService {
         this.userModel = userModel;
         this.jwtService = jwtService;
     }
-    async register(email, password) {
+    async register(email, password, role) {
+        const allowedRoles = ['sales', 'owner', 'accounts', 'admin'];
+        if (!allowedRoles.includes(role)) {
+            throw new common_1.BadRequestException(`Invalid role.`);
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new this.userModel({ email, password: hashedPassword });
+        const newUser = new this.userModel({ email, password: hashedPassword, role });
         return newUser.save();
     }
     async login(email, password) {
@@ -36,7 +40,7 @@ let AuthService = class AuthService {
         if (!user || !(await bcrypt.compare(password, user.password))) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
-        const payload = { sub: user._id, email: user.email };
+        const payload = { sub: user._id, email: user.email, role: user.role };
         return {
             access_token: this.jwtService.sign(payload),
         };

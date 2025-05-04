@@ -1,19 +1,20 @@
 import { Document } from 'mongoose';
 export type StockDocument = Stock & Document;
 export declare class Stock {
-    product_name: string;
-    model_number: string;
-    company: string;
-    stock_in_date: Date;
-    quantity: number;
-    product_description?: string;
-    selling_price: number;
+    productNumber: string;
+    product_group?: string;
+    unit: number;
+    unit_type: string;
+    gst: number;
+    batch?: string;
+    description?: string;
+    image?: string;
+    vendor?: string;
     mrp: number;
-    cost_price: number;
-    discount?: number;
-    batch_no?: string;
-    status: boolean;
-    image_url?: string;
+    offer_price: number;
+    selling_price?: number;
+    cost_price?: number;
+    stock_in_date: Date;
 }
 export declare const StockSchema: import("mongoose").Schema<Stock, import("mongoose").Model<Stock, any, any, any, Document<unknown, any, Stock> & Stock & {
     _id: import("mongoose").Types.ObjectId;

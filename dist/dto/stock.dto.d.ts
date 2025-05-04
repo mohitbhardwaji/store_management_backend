@@ -1,15 +1,28 @@
 export declare class CreateStockDto {
-    product_name: string;
-    model_number: string;
-    company: string;
-    stock_in_date: string;
-    quantity: number;
-    product_description?: string;
-    selling_price: number;
+    productNumber: string;
+    product_group: string;
+    unit: number;
+    unit_type: string;
+    gst: number;
+    batch?: string;
+    description?: string;
+    image?: string;
+    vendor?: string;
     mrp: number;
+    offer_price: number;
+    selling_price: number;
     cost_price: number;
-    discount?: number;
-    batch_no?: string;
-    status?: boolean;
-    image_url?: string;
+    stock_in_date: string;
+}
+export declare class CreateDropdownDto {
+    key: string;
+    values: string[];
+}
+export declare class UpdateStockDto {
+    productNumber?: string;
+    product_group?: string;
+    vendor?: string;
+    mrp?: number;
+    offer_price?: number;
+    gst?: number;
 }

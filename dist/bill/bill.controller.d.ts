@@ -1,22 +1,31 @@
 import { BillService } from './bill.service';
-import { CreateBillDto } from '../dto/bill.dto';
 import { Request } from 'express';
 export declare class BillController {
     private readonly billService;
     constructor(billService: BillService);
-    createBill(dto: CreateBillDto, req: Request): Promise<import("mongoose").Document<unknown, {}, import("../schemas/bill.schema").Bill> & import("../schemas/bill.schema").Bill & Required<{
-        _id: unknown;
-    }> & {
+    createBill(body: any): Promise<import("mongoose").Document<unknown, {}, import("../schemas/bill.schema").Bill> & import("../schemas/bill.schema").Bill & {
+        _id: import("mongoose").Types.ObjectId;
+    } & {
         __v: number;
     }>;
-    getAllBills(req: Request): Promise<(import("mongoose").Document<unknown, {}, import("../schemas/bill.schema").Bill> & import("../schemas/bill.schema").Bill & Required<{
-        _id: unknown;
-    }> & {
+    getAllBills(req: Request): Promise<{
+        bills: (import("mongoose").Document<unknown, {}, import("../schemas/bill.schema").Bill> & import("../schemas/bill.schema").Bill & {
+            _id: import("mongoose").Types.ObjectId;
+        } & {
+            __v: number;
+        })[];
+        total: number;
+        currentPage: number;
+        totalPages: number;
+    }>;
+    getBillById(request: any): Promise<import("mongoose").Document<unknown, {}, import("../schemas/bill.schema").Bill> & import("../schemas/bill.schema").Bill & {
+        _id: import("mongoose").Types.ObjectId;
+    } & {
         __v: number;
-    })[]>;
-    getBillById(id: string, req: Request): Promise<import("mongoose").Document<unknown, {}, import("../schemas/bill.schema").Bill> & import("../schemas/bill.schema").Bill & Required<{
-        _id: unknown;
-    }> & {
+    }>;
+    updateBill(request: any, body: any): Promise<import("mongoose").Document<unknown, {}, import("../schemas/bill.schema").Bill> & import("../schemas/bill.schema").Bill & {
+        _id: import("mongoose").Types.ObjectId;
+    } & {
         __v: number;
     }>;
 }

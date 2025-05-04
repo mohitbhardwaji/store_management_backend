@@ -18,6 +18,18 @@ export class Cart extends Document {
     },
   ])
   products: any[];
+
+  @Prop({
+    type: [
+      {
+        method: { type: String, required: true },
+        amount: { type: Number, required: true },
+        transaction_id: { type: String },
+      },
+    ],
+  })
+  payments: { method: string; amount: number; transaction_id?: string; }[];
+  
 }
 
 export const CartSchema = SchemaFactory.createForClass(Cart);

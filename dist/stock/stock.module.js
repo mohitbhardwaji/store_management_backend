@@ -12,12 +12,16 @@ const mongoose_1 = require("@nestjs/mongoose");
 const stock_schema_1 = require("../schemas/stock.schema");
 const stock_controller_1 = require("./stock.controller");
 const stock_service_1 = require("./stock.service");
+const bill_schema_1 = require("../schemas/bill.schema");
 let StockModule = class StockModule {
 };
 exports.StockModule = StockModule;
 exports.StockModule = StockModule = __decorate([
     (0, common_1.Module)({
-        imports: [mongoose_1.MongooseModule.forFeature([{ name: stock_schema_1.Stock.name, schema: stock_schema_1.StockSchema }])],
+        imports: [mongoose_1.MongooseModule.forFeature([
+                { name: stock_schema_1.Stock.name, schema: stock_schema_1.StockSchema },
+                { name: bill_schema_1.Bill.name, schema: bill_schema_1.BillSchema }
+            ])],
         controllers: [stock_controller_1.StockController],
         providers: [stock_service_1.StockService],
     })

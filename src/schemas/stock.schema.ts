@@ -3,46 +3,51 @@ import { Document } from 'mongoose';
 
 export type StockDocument = Stock & Document;
 
-@Schema()
+
+@Schema({ timestamps: true })
 export class Stock {
   @Prop({ required: true })
-  product_name: string;
-
-  @Prop({ required: true })
-  model_number: string;
-
-  @Prop({ required: true })
-  company: string;
-
-  @Prop({ type: Date, required: true })
-  stock_in_date: Date;
-
-  @Prop({ required: true })
-  quantity: number;
+  productNumber: string;
 
   @Prop()
-  product_description?: string;
+  product_group?: string;
+
+  @Prop({ required: true })
+  unit: number;
+
+  @Prop({ required: true })
+  unit_type: string;
+
+  @Prop({ required: true })
+  gst: number;
 
   @Prop()
-  selling_price: number;
+  batch?: string;
+
+  @Prop()
+  description?: string;
+
+  @Prop()
+  image?: string;
+
+  @Prop()
+  vendor?: string;
 
   @Prop({ required: true })
   mrp: number;
 
   @Prop({ required: true })
-  cost_price: number;
+  offer_price: number;
 
   @Prop()
-  discount?: number;
+  selling_price?: number;
 
   @Prop()
-  batch_no?: string;
+  cost_price?: number;
 
-  @Prop({ default: true })
-  status: boolean;
-
-  @Prop()
-  image_url?: string; 
+  @Prop({ required: true, type: Date })
+  stock_in_date: Date;
 }
+
 
 export const StockSchema = SchemaFactory.createForClass(Stock);

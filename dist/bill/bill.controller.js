@@ -15,33 +15,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BillController = void 0;
 const common_1 = require("@nestjs/common");
 const bill_service_1 = require("./bill.service");
-const bill_dto_1 = require("../dto/bill.dto");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 let BillController = class BillController {
     billService;
     constructor(billService) {
         this.billService = billService;
     }
-    async createBill(dto, req) {
-        const user = req.user;
-        return this.billService.createBill(user.userId, dto);
+    async createBill(body) {
+        return await this.billService.createBill(body);
     }
     async getAllBills(req) {
-        const user = req.user;
-        return this.billService.getBillsByUser(user.userId);
+        const filter = req.query;
+        return this.billService.getBillsByUser(filter);
     }
-    async getBillById(id, req) {
-        const user = req.user;
-        return this.billService.getBillById(id, user.userId);
+    async getBillById(request) {
+        return this.billService.getBillById(request.query.id);
+    }
+    async updateBill(request, body) {
+        const filter = request.query;
+        console.log({ request });
+        return this.billService.updateBill(filter, body);
     }
 };
 exports.BillController = BillController;
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [bill_dto_1.CreateBillDto, Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], BillController.prototype, "createBill", null);
 __decorate([
@@ -52,13 +53,20 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], BillController.prototype, "getAllBills", null);
 __decorate([
-    (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Req)()),
+    (0, common_1.Get)('/id'),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], BillController.prototype, "getBillById", null);
+__decorate([
+    (0, common_1.Patch)('update'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], BillController.prototype, "updateBill", null);
 exports.BillController = BillController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('bill'),

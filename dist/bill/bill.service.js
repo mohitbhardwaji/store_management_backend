@@ -17,28 +17,72 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const bill_schema_1 = require("../schemas/bill.schema");
 const mongoose_2 = require("mongoose");
+const bson_1 = require("bson");
 let BillService = class BillService {
     billModel;
     constructor(billModel) {
         this.billModel = billModel;
     }
-    async createBill(userId, dto) {
-        const bill = new this.billModel({
-            userId,
-            products: dto.products,
-            totalAmount: dto.totalAmount,
-        });
-        return bill.save();
+    async createBill(body) {
+        const createdBill = new this.billModel(body);
+        return createdBill.save();
     }
-    async getBillsByUser(userId) {
-        return this.billModel.find({ userId }).sort({ createdAt: -1 });
-    }
-    async getBillById(billId, userId) {
-        const bill = await this.billModel.findOne({ _id: billId, userId });
-        if (!bill) {
-            throw new Error('Bill not found or access denied');
+    async getBillsByUser(query) {
+        try {
+            const page = parseInt(query.page) || 1;
+            const limit = parseInt(query.limit) || 10;
+            const skip = (page - 1) * limit;
+            let filter = {};
+            if (query.formType && query.formType !== '' && query.formType !== 'Select All') {
+                filter = {
+                    formType: query.formType
+                };
+            }
+            const [bills, total] = await Promise.all([
+                this.billModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+                this.billModel.countDocuments(filter),
+            ]);
+            return {
+                bills,
+                total,
+                currentPage: page,
+                totalPages: Math.ceil(total / limit),
+            };
         }
-        return bill;
+        catch (err) {
+            throw new Error(err.message);
+        }
+    }
+    async getBillById(billId) {
+        try {
+            console.log("got api call", billId);
+            if (!billId) {
+                throw new Error('Bill id is undefined');
+            }
+            const bill = await this.billModel.findOne({ _id: billId });
+            console.log({ bill });
+            if (!bill) {
+                throw new Error('Bill not found or access denied');
+            }
+            return bill;
+        }
+        catch (error) {
+            throw new common_1.BadRequestException(error.message);
+        }
+    }
+    async updateBill(billId, body) {
+        try {
+            console.log({ billId });
+            const objectId = new bson_1.ObjectId(billId);
+            const updatedBill = await this.billModel.findByIdAndUpdate({ _id: billId.id }, { $set: body }, { new: true });
+            if (!updatedBill) {
+                throw new Error('Bill not found');
+            }
+            return updatedBill;
+        }
+        catch (error) {
+            throw new Error(`Failed to update bill: ${error.message}`, error.status);
+        }
     }
 };
 exports.BillService = BillService;

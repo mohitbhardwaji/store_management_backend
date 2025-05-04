@@ -12,49 +12,58 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StockSchema = exports.Stock = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
 let Stock = class Stock {
-    product_name;
-    model_number;
-    company;
-    stock_in_date;
-    quantity;
-    product_description;
-    selling_price;
+    productNumber;
+    product_group;
+    unit;
+    unit_type;
+    gst;
+    batch;
+    description;
+    image;
+    vendor;
     mrp;
+    offer_price;
+    selling_price;
     cost_price;
-    discount;
-    batch_no;
-    status;
-    image_url;
+    stock_in_date;
 };
 exports.Stock = Stock;
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
-], Stock.prototype, "product_name", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", String)
-], Stock.prototype, "model_number", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", String)
-], Stock.prototype, "company", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ type: Date, required: true }),
-    __metadata("design:type", Date)
-], Stock.prototype, "stock_in_date", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", Number)
-], Stock.prototype, "quantity", void 0);
+], Stock.prototype, "productNumber", void 0);
 __decorate([
     (0, mongoose_1.Prop)(),
     __metadata("design:type", String)
-], Stock.prototype, "product_description", void 0);
+], Stock.prototype, "product_group", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", Number)
+], Stock.prototype, "unit", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], Stock.prototype, "unit_type", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", Number)
+], Stock.prototype, "gst", void 0);
 __decorate([
     (0, mongoose_1.Prop)(),
-    __metadata("design:type", Number)
-], Stock.prototype, "selling_price", void 0);
+    __metadata("design:type", String)
+], Stock.prototype, "batch", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], Stock.prototype, "description", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], Stock.prototype, "image", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], Stock.prototype, "vendor", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", Number)
@@ -62,25 +71,21 @@ __decorate([
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", Number)
-], Stock.prototype, "cost_price", void 0);
+], Stock.prototype, "offer_price", void 0);
 __decorate([
     (0, mongoose_1.Prop)(),
     __metadata("design:type", Number)
-], Stock.prototype, "discount", void 0);
+], Stock.prototype, "selling_price", void 0);
 __decorate([
     (0, mongoose_1.Prop)(),
-    __metadata("design:type", String)
-], Stock.prototype, "batch_no", void 0);
+    __metadata("design:type", Number)
+], Stock.prototype, "cost_price", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ default: true }),
-    __metadata("design:type", Boolean)
-], Stock.prototype, "status", void 0);
-__decorate([
-    (0, mongoose_1.Prop)(),
-    __metadata("design:type", String)
-], Stock.prototype, "image_url", void 0);
+    (0, mongoose_1.Prop)({ required: true, type: Date }),
+    __metadata("design:type", Date)
+], Stock.prototype, "stock_in_date", void 0);
 exports.Stock = Stock = __decorate([
-    (0, mongoose_1.Schema)()
+    (0, mongoose_1.Schema)({ timestamps: true })
 ], Stock);
 exports.StockSchema = mongoose_1.SchemaFactory.createForClass(Stock);
 //# sourceMappingURL=stock.schema.js.map

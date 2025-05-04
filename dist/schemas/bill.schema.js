@@ -11,34 +11,115 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BillSchema = exports.Bill = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
-const mongoose_2 = require("mongoose");
-let Bill = class Bill extends mongoose_2.Document {
-    userId;
+let Bill = class Bill {
+    formType;
+    customerName;
+    customerAddress;
+    customerPhone;
+    customerAltPhone;
     products;
     totalAmount;
+    paymentMethod;
+    transactionId;
+    deliveryDate;
+    salesperson;
+    partialPayment;
+    advanceAmount;
+    splitPayment;
+    payment1;
+    payment2;
 };
 exports.Bill = Bill;
 __decorate([
-    (0, mongoose_1.Prop)({ type: mongoose_2.Types.ObjectId, ref: 'User', required: true }),
-    __metadata("design:type", mongoose_2.Types.ObjectId)
-], Bill.prototype, "userId", void 0);
+    (0, mongoose_1.Prop)({ default: 'Order Form' }),
+    __metadata("design:type", String)
+], Bill.prototype, "formType", void 0);
 __decorate([
-    (0, mongoose_1.Prop)([
-        {
-            productId: String,
-            name: String,
-            quantity: Number,
-            price: Number,
-            customPrice: Number,
-            image: String,
-        },
-    ]),
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], Bill.prototype, "customerName", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], Bill.prototype, "customerAddress", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], Bill.prototype, "customerPhone", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], Bill.prototype, "customerAltPhone", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: [
+            {
+                productNumber: { type: String, required: true },
+                productName: { type: String },
+                product_group: { type: String },
+                gst: { type: Number },
+                quantity: { type: Number, required: true, default: 1 },
+                price: { type: Number, required: true, default: 0 },
+                customPrice: { type: Number, required: true, default: 0 },
+                image: { type: String },
+                description: { type: String },
+            },
+        ] }),
     __metadata("design:type", Array)
 ], Bill.prototype, "products", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", Number)
 ], Bill.prototype, "totalAmount", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], Bill.prototype, "paymentMethod", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], Bill.prototype, "transactionId", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", Date)
+], Bill.prototype, "deliveryDate", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], Bill.prototype, "salesperson", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ default: false }),
+    __metadata("design:type", Boolean)
+], Bill.prototype, "partialPayment", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ default: 0 }),
+    __metadata("design:type", Number)
+], Bill.prototype, "advanceAmount", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ default: false }),
+    __metadata("design:type", Boolean)
+], Bill.prototype, "splitPayment", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({
+        type: {
+            mode: { type: String },
+            amount: { type: Number },
+            transactionId: { type: String },
+        },
+        default: null,
+    }),
+    __metadata("design:type", Object)
+], Bill.prototype, "payment1", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({
+        type: {
+            mode: { type: String },
+            amount: { type: Number },
+            transactionId: { type: String },
+        },
+        default: null,
+    }),
+    __metadata("design:type", Object)
+], Bill.prototype, "payment2", void 0);
 exports.Bill = Bill = __decorate([
     (0, mongoose_1.Schema)({ timestamps: true })
 ], Bill);
