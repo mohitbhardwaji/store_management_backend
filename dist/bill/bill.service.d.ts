@@ -1,31 +1,15 @@
 import { Bill } from '../schemas/bill.schema';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 export declare class BillService {
     private billModel;
     constructor(billModel: Model<Bill>);
-    createBill(body: any): Promise<mongoose.Document<unknown, {}, Bill> & Bill & {
-        _id: mongoose.Types.ObjectId;
-    } & {
-        __v: number;
-    }>;
+    createBill(body: any): Promise<any>;
     getBillsByUser(query: any): Promise<{
-        bills: (mongoose.Document<unknown, {}, Bill> & Bill & {
-            _id: mongoose.Types.ObjectId;
-        } & {
-            __v: number;
-        })[];
-        total: number;
+        bills: any;
+        total: any;
         currentPage: number;
         totalPages: number;
     }>;
-    getBillById(billId: string): Promise<mongoose.Document<unknown, {}, Bill> & Bill & {
-        _id: mongoose.Types.ObjectId;
-    } & {
-        __v: number;
-    }>;
-    updateBill(billId: any, body: Partial<Bill>): Promise<mongoose.Document<unknown, {}, Bill> & Bill & {
-        _id: mongoose.Types.ObjectId;
-    } & {
-        __v: number;
-    }>;
+    getBillById(billId: string): Promise<any>;
+    updateBill(billId: any, body: Partial<Bill>): Promise<any>;
 }

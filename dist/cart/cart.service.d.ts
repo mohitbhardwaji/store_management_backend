@@ -4,28 +4,12 @@ import { AddToCartDto, UpdateCartDto } from '../dto/cart.dto';
 export declare class CartService {
     private cartModel;
     constructor(cartModel: Model<Cart>);
-    addToCart(userId: string, product: AddToCartDto): Promise<import("mongoose").Document<unknown, {}, Cart> & Cart & Required<{
-        _id: unknown;
-    }> & {
-        __v: number;
-    }>;
-    getCartByUserId(userId: string): Promise<(import("mongoose").Document<unknown, {}, Cart> & Cart & Required<{
-        _id: unknown;
-    }> & {
-        __v: number;
-    }) | null>;
-    removeProduct(userId: string, productId: string): Promise<import("mongoose").Document<unknown, {}, Cart> & Cart & Required<{
-        _id: unknown;
-    }> & {
-        __v: number;
-    }>;
-    updateCartItem(userId: string, dto: UpdateCartDto): Promise<import("mongoose").Document<unknown, {}, Cart> & Cart & Required<{
-        _id: unknown;
-    }> & {
-        __v: number;
-    }>;
+    addToCart(userId: string, product: AddToCartDto): Promise<any>;
+    getCartByUserId(userId: string): Promise<any>;
+    removeProduct(userId: string, productId: string): Promise<any>;
+    updateCartItem(userId: string, dto: UpdateCartDto): Promise<any>;
     deleteUserCart(userId: string): Promise<{
         message: string;
-        deletedCount: number;
+        deletedCount: any;
     }>;
 }

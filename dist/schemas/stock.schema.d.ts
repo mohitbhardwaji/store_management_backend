@@ -16,12 +16,4 @@ export declare class Stock {
     cost_price?: number;
     stock_in_date: Date;
 }
-export declare const StockSchema: import("mongoose").Schema<Stock, import("mongoose").Model<Stock, any, any, any, Document<unknown, any, Stock> & Stock & {
-    _id: import("mongoose").Types.ObjectId;
-} & {
-    __v: number;
-}, any>, {}, {}, {}, {}, import("mongoose").DefaultSchemaOptions, Stock, Document<unknown, {}, import("mongoose").FlatRecord<Stock>> & import("mongoose").FlatRecord<Stock> & {
-    _id: import("mongoose").Types.ObjectId;
-} & {
-    __v: number;
-}>;
+export declare const StockSchema: any;
