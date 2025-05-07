@@ -155,7 +155,7 @@ export class StockService {
 
       const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       console.log(new Date(filter.stock_date))
-      const dataRows = rows.slice(14); // start from 15th row (index 14)
+      const dataRows = rows.slice(1); 
 
       let stocks: {
         productNumber: string;
@@ -181,9 +181,9 @@ export class StockService {
           productNumber,
           unit: unitCell != ''?unitCell:0,
           unit_type: "Nos.",
-          gst: 18,         // Default GST
-          mrp: price || 1000,
-          offer_price: 900, // Default Offer Price
+          gst: 18,
+          mrp: price? price :  0,
+          offer_price: price? price :  0,
           stock_in_date: new Date(filter.stock_date)
         };
 

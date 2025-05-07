@@ -23,7 +23,7 @@ export class BillController {
 
   @Get('/id')
   async getBillById(@Req() request) {
-    
+    console.log(request)
     return this.billService.getBillById(request.query.id);
   }
 

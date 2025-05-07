@@ -29,6 +29,7 @@ let BillController = class BillController {
         return this.billService.getBillsByUser(filter);
     }
     async getBillById(request) {
+        console.log(request);
         return this.billService.getBillById(request.query.id);
     }
     async updateBill(request, body) {

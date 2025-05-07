@@ -136,7 +136,7 @@ let StockService = class StockService {
             const worksheet = workbook.Sheets[sheetName];
             const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
             console.log(new Date(filter.stock_date));
-            const dataRows = rows.slice(14);
+            const dataRows = rows.slice(1);
             let stocks = [];
             for (const rawRow of dataRows) {
                 const row = rawRow;
@@ -151,8 +151,8 @@ let StockService = class StockService {
                     unit: unitCell != '' ? unitCell : 0,
                     unit_type: "Nos.",
                     gst: 18,
-                    mrp: price || 1000,
-                    offer_price: 900,
+                    mrp: price ? price : 0,
+                    offer_price: price ? price : 0,
                     stock_in_date: new Date(filter.stock_date)
                 };
                 stocks.push(stockItem);

@@ -16,7 +16,6 @@ exports.StockController = void 0;
 const common_1 = require("@nestjs/common");
 const stock_service_1 = require("./stock.service");
 const stock_dto_1 = require("../dto/stock.dto");
-const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const platform_express_1 = require("@nestjs/platform-express");
 const multer_1 = require("multer");
 let StockController = class StockController {
@@ -97,7 +96,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], StockController.prototype, "importStock", null);
 exports.StockController = StockController = __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('stocks'),
     __metadata("design:paramtypes", [stock_service_1.StockService])
 ], StockController);
