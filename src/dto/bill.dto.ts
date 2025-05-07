@@ -6,7 +6,6 @@ export class CreateBillDto {
       quantity: number;
       price: number;
       customPrice: number;
-      image: string;
     }[];
     totalAmount: number;
   }

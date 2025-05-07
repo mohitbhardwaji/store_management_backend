@@ -3,13 +3,29 @@ import { Request } from 'express';
 export declare class BillController {
     private readonly billService;
     constructor(billService: BillService);
-    createBill(body: any): Promise<any>;
+    createBill(body: any): Promise<import("mongoose").Document<unknown, {}, import("../schemas/bill.schema").Bill, {}> & import("../schemas/bill.schema").Bill & {
+        _id: import("mongoose").Types.ObjectId;
+    } & {
+        __v: number;
+    }>;
     getAllBills(req: Request): Promise<{
-        bills: any;
-        total: any;
+        bills: (import("mongoose").Document<unknown, {}, import("../schemas/bill.schema").Bill, {}> & import("../schemas/bill.schema").Bill & {
+            _id: import("mongoose").Types.ObjectId;
+        } & {
+            __v: number;
+        })[];
+        total: number;
         currentPage: number;
         totalPages: number;
     }>;
-    getBillById(request: any): Promise<any>;
-    updateBill(request: any, body: any): Promise<any>;
+    getBillById(request: any): Promise<import("mongoose").Document<unknown, {}, import("../schemas/bill.schema").Bill, {}> & import("../schemas/bill.schema").Bill & {
+        _id: import("mongoose").Types.ObjectId;
+    } & {
+        __v: number;
+    }>;
+    updateBill(request: any, body: any): Promise<import("mongoose").Document<unknown, {}, import("../schemas/bill.schema").Bill, {}> & import("../schemas/bill.schema").Bill & {
+        _id: import("mongoose").Types.ObjectId;
+    } & {
+        __v: number;
+    }>;
 }

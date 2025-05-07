@@ -23,12 +23,6 @@ let StockController = class StockController {
     constructor(stockService) {
         this.stockService = stockService;
     }
-    async addStock(body) {
-        return this.stockService.addStock(body);
-    }
-    async getStocks(searchQuery, page = 1, limit = 10, id) {
-        return this.stockService.getStocks(id, searchQuery, Number(page), Number(limit));
-    }
     async searchStocks(searchQuery) {
         return this.stockService.searchStocks(searchQuery);
     }
@@ -41,23 +35,6 @@ let StockController = class StockController {
     }
 };
 exports.StockController = StockController;
-__decorate([
-    (0, common_1.Post)('/addStock'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], StockController.prototype, "addStock", null);
-__decorate([
-    (0, common_1.Get)('/getstock'),
-    __param(0, (0, common_1.Query)('search')),
-    __param(1, (0, common_1.Query)('page')),
-    __param(2, (0, common_1.Query)('limit')),
-    __param(3, (0, common_1.Query)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object, Object, String]),
-    __metadata("design:returntype", Promise)
-], StockController.prototype, "getStocks", null);
 __decorate([
     (0, common_1.Get)('/searchStock'),
     __param(0, (0, common_1.Query)('search')),

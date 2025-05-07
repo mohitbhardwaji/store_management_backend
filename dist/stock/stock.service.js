@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StockService = void 0;
 const common_1 = require("@nestjs/common");
@@ -21,92 +20,15 @@ const stock_schema_1 = require("../schemas/stock.schema");
 const XLSX = require("xlsx");
 const fs = require("fs");
 const bill_schema_1 = require("../schemas/bill.schema");
+const product_schema_1 = require("../schemas/product.schema");
 let StockService = class StockService {
+    productModel;
     stockModel;
     billModel;
-    constructor(stockModel, billModel) {
+    constructor(productModel, stockModel, billModel) {
+        this.productModel = productModel;
         this.stockModel = stockModel;
         this.billModel = billModel;
-    }
-    async addStock(body) {
-        const imageMap = {
-            TV: 'https://dianora.in/wp-content/uploads/2024/10/24-normal-tv-best-price.png',
-            Refrigerator: 'https://images.samsung.com/is/image/samsung/p6pim/in/rt34dg5a2bbxhl/gallery/in-top-mount-freezer-twin-cooling-plus-529471-rt34dg5a2bbxhl-544358003?$684_547_PNG$',
-            'Air conditioner': 'https://sovpsl.com/wp-content/uploads/2015/11/air-conditioning.jpg',
-            'Washing Machine': 'https://electronicparadise.in/cdn/shop/files/BoschSeries6FrontLoadWashingMachine_8kg_1400rpmWGA2341PIN.jpg?v=1707300822',
-            Fan: 'https://orientelectric.com/cdn/shop/files/Image_0-copy-0_6ca477d7-3f53-470f-a07c-9eb5a68eb758.png?v=1732165732&width=1946',
-            Cooler: 'https://havells.com/media/catalog/product/cache/844a913d283fe95e56e39582c5f2767b/g/h/ghracdwe3451_3_.jpg',
-            Microwave: 'https://blendart.in/wp-content/uploads/2024/08/Commercial-Microwave.webp',
-        };
-        const { category, ...rest } = body;
-        if (category && imageMap[category]) {
-            rest.image = imageMap[category];
-        }
-        const createdStock = new this.stockModel(rest);
-        return await createdStock.save();
-    }
-    async getStocks(id, searchQuery, page, limit) {
-        if (id) {
-            const product = await this.stockModel.findById(id);
-            if (!product) {
-                throw new Error('Product not found');
-            }
-            const soldData = await this.billModel.aggregate([
-                { $match: { formType: { $in: ['Order Form', 'Invoice'] } } },
-                { $unwind: '$products' },
-                { $match: { 'products.productNumber': product.productNumber } },
-                {
-                    $group: {
-                        _id: '$products.productNumber',
-                        totalSold: { $sum: '$products.quantity' },
-                    },
-                },
-            ]);
-            const soldUnits = soldData.length > 0 ? soldData[0].totalSold : 0;
-            return {
-                product,
-                soldUnits,
-                availableUnits: product.unit,
-            };
-        }
-        let query = {};
-        if (searchQuery) {
-            query = {
-                productNumber: { $regex: searchQuery, $options: 'i' },
-            };
-        }
-        const skip = (page - 1) * limit;
-        const [stocks, total] = await Promise.all([
-            this.stockModel.find(query).skip(skip).limit(limit).lean(),
-            this.stockModel.countDocuments(query),
-        ]);
-        const productNumbers = stocks.map((s) => s.productNumber);
-        const soldData = await this.billModel.aggregate([
-            { $match: { formType: { $in: ['Order Form', 'Invoice'] } } },
-            { $unwind: '$products' },
-            { $match: { 'products.productNumber': { $in: productNumbers } } },
-            {
-                $group: {
-                    _id: '$products.productNumber',
-                    totalSold: { $sum: '$products.quantity' },
-                },
-            },
-        ]);
-        const soldMap = soldData.reduce((acc, item) => {
-            acc[item._id] = item.totalSold;
-            return acc;
-        }, {});
-        const updatedStocks = stocks.map((stock) => ({
-            ...stock,
-            soldUnits: soldMap[stock.productNumber] || 0,
-        }));
-        return {
-            stocks: updatedStocks,
-            total,
-            page,
-            limit,
-            totalPages: Math.ceil(total / limit),
-        };
     }
     async searchStocks(searchQuery) {
         try {
@@ -116,7 +38,7 @@ let StockService = class StockService {
                     productNumber: { $regex: searchQuery, $options: 'i' },
                 };
             }
-            const res = await this.stockModel.find(query);
+            const res = await this.productModel.find(query);
             return res;
         }
         catch (err) {
@@ -130,52 +52,92 @@ let StockService = class StockService {
         }
         return updatedStock;
     }
+    async parseDate(input) {
+        const date = new Date(input);
+        return isNaN(date.getTime()) ? null : date;
+    }
     async importStock(filePath, filter) {
         try {
             const workbook = XLSX.readFile(filePath);
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
             const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-            console.log(new Date(filter.stock_date));
+            const headers = rows[0];
             const dataRows = rows.slice(1);
-            let stocks = [];
+            const stockInDate = new Date(filter.stock_date);
+            const stocksToInsert = [];
+            const newlyCreatedProducts = [];
+            const skippedDuplicates = [];
+            const invalidRows = [];
             for (const rawRow of dataRows) {
-                const row = rawRow;
-                const productNumber = row[0]?.toString().trim();
-                const unitCell = row[1]?.toString().trim() || '';
-                const price = row[2]?.toString().trim();
+                const [productNumberRaw, quantityRaw, rateRaw, gstRaw] = rawRow;
+                const productNumber = productNumberRaw?.toString().trim();
+                const quantity = Number(quantityRaw) || 0;
+                const rate = Number(rateRaw) || 0;
+                const gst = Number(gstRaw) || 0;
                 if (!productNumber) {
+                    invalidRows.push({ reason: 'Missing product number or invalid quantity', row: rawRow });
                     continue;
                 }
-                const stockItem = {
-                    productNumber,
-                    unit: unitCell != '' ? unitCell : 0,
-                    unit_type: "Nos.",
-                    gst: 18,
-                    mrp: price ? price : 0,
-                    offer_price: price ? price : 0,
-                    stock_in_date: new Date(filter.stock_date)
+                let product = await this.productModel.findOne({ productNumber });
+                if (!product) {
+                    try {
+                        product = await this.productModel.create({
+                            productNumber,
+                            category: 'Default',
+                            subcategory: 'Default',
+                            rate,
+                            gst,
+                        });
+                        newlyCreatedProducts.push(productNumber);
+                    }
+                    catch (err) {
+                        invalidRows.push({ reason: 'Failed to create product', row: rawRow, error: err.message });
+                        continue;
+                    }
+                }
+                else {
+                    await this.productModel.updateOne({ productNumber }, { $set: { rate, gst } });
+                }
+                const existingStock = await this.stockModel.findOne({
+                    product_id: product._id,
+                    current_stock_in_date: stockInDate,
+                });
+                if (existingStock) {
+                    skippedDuplicates.push({ reason: 'Duplicate stock', row: rawRow });
+                    continue;
+                }
+                const stockData = {
+                    product_id: product.id.toString(),
+                    current_quantity: quantity,
+                    current_stock_in_date: stockInDate,
+                    vendor: 'Default Vendor',
+                    history: [
+                        {
+                            quantity,
+                            stock_in_date: stockInDate,
+                            updated_at: new Date(),
+                        },
+                    ],
                 };
-                stocks.push(stockItem);
+                stocksToInsert.push(stockData);
             }
-            if (stocks.length === 0) {
-                throw new common_1.BadRequestException('No valid data found in the file.');
+            if (stocksToInsert.length === 0) {
+                fs.unlinkSync(filePath);
+                throw new common_1.BadRequestException('No valid stock records to insert.');
             }
-            const response = await this.stockModel.create(stocks);
-            if (response) {
-                return {
-                    message: 'Stock imported successfully',
-                    totalImported: stocks,
-                };
-            }
+            const result = await this.stockModel.insertMany(stocksToInsert);
             fs.unlinkSync(filePath);
             return {
-                message: 'Stock imported successfully',
-                totalImported: stocks,
+                message: 'Stock import completed',
+                inserted: result.length,
+                newProducts: newlyCreatedProducts,
+                skippedDuplicates,
+                invalidRows,
             };
         }
         catch (error) {
-            console.error(error);
+            console.error('Import stock error:', error);
             throw new common_1.BadRequestException('Failed to import stock: ' + error.message);
         }
     }
@@ -183,8 +145,11 @@ let StockService = class StockService {
 exports.StockService = StockService;
 exports.StockService = StockService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, mongoose_1.InjectModel)(stock_schema_1.Stock.name)),
-    __param(1, (0, mongoose_1.InjectModel)(bill_schema_1.Bill.name)),
-    __metadata("design:paramtypes", [typeof (_a = typeof mongoose_2.Model !== "undefined" && mongoose_2.Model) === "function" ? _a : Object, typeof (_b = typeof mongoose_2.Model !== "undefined" && mongoose_2.Model) === "function" ? _b : Object])
+    __param(0, (0, mongoose_1.InjectModel)(product_schema_1.Product.name)),
+    __param(1, (0, mongoose_1.InjectModel)(stock_schema_1.Stock.name)),
+    __param(2, (0, mongoose_1.InjectModel)(bill_schema_1.Bill.name)),
+    __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
+        mongoose_2.Model])
 ], StockService);
 //# sourceMappingURL=stock.service.js.map

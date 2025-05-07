@@ -10,20 +10,17 @@ import { diskStorage } from 'multer';
 export class StockController {
   constructor(private readonly stockService: StockService) {}
 
-  @Post('/addStock')
-  async addStock(@Body() body ) {
-    return this.stockService.addStock(body);
-  }
 
-  @Get('/getstock')
-  async getStocks(
-    @Query('search') searchQuery: string,
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
-    @Query('id') id: string, // <-- Accept id as query param
-  ) {
-    return this.stockService.getStocks(id, searchQuery, Number(page), Number(limit));
-  }
+
+  // @Get('/getstock')
+  // async getStocks(
+  //   @Query('search') searchQuery: string,
+  //   @Query('page') page = 1,
+  //   @Query('limit') limit = 10,
+  //   @Query('id') id: string, // <-- Accept id as query param
+  // ) {
+  //   return this.stockService.getStocks(id, searchQuery, Number(page), Number(limit));
+  // }
 
 
   @Get('/searchStock')

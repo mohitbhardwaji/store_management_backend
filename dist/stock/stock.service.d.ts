@@ -2,42 +2,30 @@ import { Model } from 'mongoose';
 import { Stock, StockDocument } from '../schemas/stock.schema';
 import { UpdateStockDto } from '../dto/stock.dto';
 import { BillDocument } from 'src/schemas/bill.schema';
+import { Product, ProductDocument } from 'src/schemas/product.schema';
 export declare class StockService {
+    private readonly productModel;
     private stockModel;
     private billModel;
-    constructor(stockModel: Model<StockDocument>, billModel: Model<BillDocument>);
-    addStock(body: any): Promise<Stock>;
-    getStocks(id: string, searchQuery: string, page: number, limit: number): Promise<{
-        product: any;
-        soldUnits: any;
-        availableUnits: any;
-        stocks?: undefined;
-        total?: undefined;
-        page?: undefined;
-        limit?: undefined;
-        totalPages?: undefined;
-    } | {
-        stocks: any;
-        total: any;
-        page: number;
-        limit: number;
-        totalPages: number;
-        product?: undefined;
-        soldUnits?: undefined;
-        availableUnits?: undefined;
+    constructor(productModel: Model<ProductDocument>, stockModel: Model<StockDocument>, billModel: Model<BillDocument>);
+    searchStocks(searchQuery: string): Promise<(import("mongoose").Document<unknown, {}, ProductDocument, {}> & Product & import("mongoose").Document<unknown, any, any, Record<string, any>> & Required<{
+        _id: unknown;
+    }> & {
+        __v: number;
+    })[]>;
+    updateStock(id: string, updateStockDto: UpdateStockDto): Promise<import("mongoose").Document<unknown, {}, StockDocument, {}> & Stock & import("mongoose").Document<unknown, any, any, Record<string, any>> & Required<{
+        _id: unknown;
+    }> & {
+        __v: number;
     }>;
-    searchStocks(searchQuery: string): Promise<any>;
-    updateStock(id: string, updateStockDto: UpdateStockDto): Promise<any>;
-    importStock(filePath: any, filter: any): Promise<{
+    parseDate(input: any): Promise<Date | null>;
+    importStock(filePath: string, filter: {
+        stock_date: string;
+    }): Promise<{
         message: string;
-        totalImported: {
-            productNumber: string;
-            unit: number;
-            unit_type: string;
-            gst: number;
-            mrp: number;
-            offer_price: number;
-            stock_in_date: Date;
-        }[];
+        inserted: number;
+        newProducts: string[];
+        skippedDuplicates: any[];
+        invalidRows: any[];
     }>;
 }

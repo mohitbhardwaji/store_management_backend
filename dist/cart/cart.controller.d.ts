@@ -10,6 +10,6 @@ export declare class CartController {
     updateCart(dto: UpdateCartDto, req: Request): Promise<any>;
     deleteUserCart(req: Request): Promise<{
         message: string;
-        deletedCount: any;
+        deletedCount: number;
     }>;
 }

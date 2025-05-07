@@ -11,79 +11,59 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StockSchema = exports.Stock = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
+const mongoose_2 = require("mongoose");
 let Stock = class Stock {
-    productNumber;
-    product_group;
-    unit;
-    unit_type;
-    gst;
-    batch;
-    description;
-    image;
+    product_id;
+    current_quantity;
+    current_stock_in_date;
+    history;
     vendor;
-    mrp;
-    offer_price;
-    selling_price;
-    cost_price;
-    stock_in_date;
+    created_at;
+    updated_at;
+    isDeleted;
 };
 exports.Stock = Stock;
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", String)
-], Stock.prototype, "productNumber", void 0);
+    (0, mongoose_1.Prop)({ type: mongoose_2.Types.ObjectId, ref: 'Product', required: true }),
+    __metadata("design:type", mongoose_2.Types.ObjectId)
+], Stock.prototype, "product_id", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
-    __metadata("design:type", String)
-], Stock.prototype, "product_group", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
+    (0, mongoose_1.Prop)({ required: false }),
     __metadata("design:type", Number)
-], Stock.prototype, "unit", void 0);
+], Stock.prototype, "current_quantity", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", String)
-], Stock.prototype, "unit_type", void 0);
+    (0, mongoose_1.Prop)({ default: Date.now }),
+    __metadata("design:type", Date)
+], Stock.prototype, "current_stock_in_date", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", Number)
-], Stock.prototype, "gst", void 0);
+    (0, mongoose_1.Prop)({
+        type: [
+            {
+                quantity: { type: Number, required: false },
+                stock_in_date: { type: Date, required: false },
+                updated_at: { type: Date, required: false },
+            },
+        ],
+        default: [],
+    }),
+    __metadata("design:type", Array)
+], Stock.prototype, "history", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
-    __metadata("design:type", String)
-], Stock.prototype, "batch", void 0);
-__decorate([
-    (0, mongoose_1.Prop)(),
-    __metadata("design:type", String)
-], Stock.prototype, "description", void 0);
-__decorate([
-    (0, mongoose_1.Prop)(),
-    __metadata("design:type", String)
-], Stock.prototype, "image", void 0);
-__decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ required: false }),
     __metadata("design:type", String)
 ], Stock.prototype, "vendor", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", Number)
-], Stock.prototype, "mrp", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", Number)
-], Stock.prototype, "offer_price", void 0);
-__decorate([
-    (0, mongoose_1.Prop)(),
-    __metadata("design:type", Number)
-], Stock.prototype, "selling_price", void 0);
-__decorate([
-    (0, mongoose_1.Prop)(),
-    __metadata("design:type", Number)
-], Stock.prototype, "cost_price", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true, type: Date }),
+    (0, mongoose_1.Prop)({ default: Date.now }),
     __metadata("design:type", Date)
-], Stock.prototype, "stock_in_date", void 0);
+], Stock.prototype, "created_at", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ default: Date.now }),
+    __metadata("design:type", Date)
+], Stock.prototype, "updated_at", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ default: false }),
+    __metadata("design:type", Boolean)
+], Stock.prototype, "isDeleted", void 0);
 exports.Stock = Stock = __decorate([
     (0, mongoose_1.Schema)({ timestamps: true })
 ], Stock);
