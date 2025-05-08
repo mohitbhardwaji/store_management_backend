@@ -17,28 +17,56 @@ export class StockService {
   ) { }
 
 
-  async getStockById(stockId: string) {
-    // 1. Fetch stock entry by ID
-    const stock = await this.stockModel.findById(stockId).lean();
-    if (!stock) throw new NotFoundException('Stock not found');
+  async getStock(stockId?: string) {
+    if (stockId) {
+      // ======== Get single stock by ID ========
+      const stock = await this.stockModel.findById(stockId).lean();
+      if (!stock) throw new NotFoundException('Stock not found');
   
-    // 2. Fetch associated product details (assuming `product_id` references `ProductModel`)
-    const product = await this.productModel.findById(stock.product_id).lean();
-    if (!product) throw new NotFoundException('Product not found for stock');
+      const product = await this.productModel.findById(stock.product_id).lean();
+      if (!product) throw new NotFoundException('Product not found for stock');
   
-    // 3. Find all sold units by matching productNumber in bill products
+      const soldData = await this.billModel.aggregate([
+        { $match: { formType: { $in: ['Order Form', 'Invoice'] } } },
+        { $unwind: '$products' },
+        { $match: { 'products.productNumber': product.productNumber } },
+        {
+          $group: {
+            _id: '$products.productNumber',
+            totalSold: { $sum: '$products.quantity' },
+          },
+        },
+      ]);
+  
+      const soldUnits = soldData.length > 0 ? soldData[0].totalSold : 0;
+  
+      return {
+        stockId: stock._id,
+        product,
+        currentStock: stock.current_quantity,
+        soldUnits,
+        availableUnits: stock.current_quantity - soldUnits,
+        stockHistory: stock.history,
+        vendor: stock.vendor,
+        updatedAt: stock.updated_at,
+      };
+    }
+  
+    // ======== Get ALL stocks ========
+    const stocks = await this.stockModel.find().lean();
+  
+    const productIds = stocks.map((s) => s.product_id);
+    const products = await this.productModel.find({ _id: { $in: productIds } }).lean();
+  
+    // Map productId -> product
+    const productMap = new Map(products.map((p) => [p._id.toString(), p]));
+  
+    const productNumbers = products.map((p) => p.productNumber);
+  
     const soldData = await this.billModel.aggregate([
-      {
-        $match: {
-          formType: { $in: ['Order Form', 'Invoice'] },
-        },
-      },
+      { $match: { formType: { $in: ['Order Form', 'Invoice'] } } },
       { $unwind: '$products' },
-      {
-        $match: {
-          'products.productNumber': product.productNumber,
-        },
-      },
+      { $match: { 'products.productNumber': { $in: productNumbers } } },
       {
         $group: {
           _id: '$products.productNumber',
@@ -46,20 +74,26 @@ export class StockService {
         },
       },
     ]);
-    console.log({soldData});
-    
-    const soldUnits = soldData.length > 0 ? soldData[0].totalSold : 0;
   
-    return {
-      stockId: stock._id,
-      product,
-      currentStock: stock.current_quantity,
-      soldUnits,
-      availableUnits: stock.current_quantity - soldUnits,
-      stockHistory: stock.history,
-      vendor: stock.vendor,
-      updatedAt: stock.updated_at,
-    };
+    const soldMap = new Map(soldData.map((item) => [item._id, item.totalSold]));
+  
+    const result = stocks.map((stock) => {
+      const product = productMap.get(stock.product_id.toString());
+      const soldUnits = soldMap.get(product?.productNumber) || 0;
+  
+      return {
+        stockId: stock._id,
+        product,
+        currentStock: stock.current_quantity,
+        soldUnits,
+        availableUnits: stock.current_quantity - soldUnits,
+        stockHistory: stock.history,
+        vendor: stock.vendor,
+        updatedAt: stock.updated_at,
+      };
+    });
+  
+    return result;
   }
   
   

@@ -17,9 +17,9 @@ export class StockController {
     @Query('search') searchQuery: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
-    @Query('id') id: string, // <-- Accept id as query param
+    @Query('stock_id') stock_id: string, // <-- Accept stock_id as query param
   ) {
-    return this.stockService.getStockById(id);
+    return this.stockService.getStock(stock_id);
   }
 
 
