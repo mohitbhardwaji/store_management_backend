@@ -1,9 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Document, Types } from 'mongoose';
 
 export type BillDocument = Bill & Document;
 
 @Schema({ timestamps: true })
+
+// class PaymentDto {
+//   @IsString()
+//   @IsOptional()
+//   mode?: string;
+
+//   @IsNumber()
+//   @IsOptional()
+//   amount?: number;
+
+//   @IsString()
+//   @IsOptional()
+//   transactionId?: string;
+// }
 export class Bill {
   @Prop({ default: 'Order Form' })
   formType: string;
@@ -99,8 +115,17 @@ export class Bill {
   @Prop({ type: Types.ObjectId, ref: 'Finance' })
   finance_id?: Types.ObjectId;
 
+  // @Prop({ default: false })
+  // splitPaymentButton?: boolean;
+ 
+  
+
+
+  
 
 }
+
+
 
 export const BillSchema = SchemaFactory.createForClass(Bill);
 

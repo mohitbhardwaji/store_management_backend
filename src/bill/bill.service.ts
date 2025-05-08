@@ -11,29 +11,56 @@ export class BillService {
   constructor(@InjectModel(Bill.name) private billModel: Model<Bill>,@InjectModel(Finance.name) private readonly financeModel: Model<Finance>) {}
 
 
-  // async createBill(createBillDto: CreateBillDto): Promise<Bill> {
-  //   const bill = new this.billModel(createBillDto);
-  //   const savedBill = await bill.save();
+
+  // async createBill(createBillDto: CreateBillDto) {
+
+    
+  //   const session = await this.billModel.db.startSession();
+  //   session.startTransaction();
   
-  //   // Now create finance entry if needed
-  //   const financeData = {
-  //     financerName: 'Default Financer', // or from DTO
-  //     downpayment: 10000,
-  //     emiTenure: 12,
-  //     roi: 12.5,
-  //     discount: 0,
-  //     priceAfterFinance: createBillDto.totalAmount,
-  //     product_id: createBillDto.product_id,
-  //     bill_id: savedBill._id,
-  //   };
+  //   try {
+  //     const {
+  //       isFinance,
+  //       finance,
+  //       products,
+  //       ...billData
+  //     } = createBillDto;
   
-  //   const createdFinance = await this.financeModel.create(financeData);
+  //     // Create the bill
+  //     const bill = new this.billModel({ ...billData, products });
+  //     await bill.save({ session });
   
-  //   // Update the saved bill with finance_id
-  //   savedBill.finance_id = createdFinance._id;
-  //   await savedBill.save();
+  //     if (isFinance && finance) {
+  //       // Extract product_ids from the products array
+  //       const productIds = products.map(p => p.product_id);
   
-  //   return savedBill;
+  //       const financeData = {
+  //         ...finance,
+  //         bill_id: bill._id,
+  //         product_id: productIds,
+  //       };
+        
+  //       const financeEntry = new this.financeModel(financeData);
+  //       await financeEntry.save({ session });
+  
+  //       bill.finance_id = financeEntry._id as ObjectId;
+  //       await bill.save({ session });
+  //     }
+  
+  //     await session.commitTransaction();
+  //     session.endSession();
+  
+  // //   return savedBill;
+  //     return {
+  //       message: 'Bill created successfully',
+  //       billId: bill._id,
+  //     };
+  //   } catch (error) {
+  //     await session.abortTransaction();
+  //     session.endSession();
+  //     console.error('Error creating bill with finance:', error);
+  //     throw new BadRequestException('Failed to create bill: ' + error.message);
+  //   }
   // }
   
 
@@ -45,25 +72,27 @@ export class BillService {
       const {
         isFinance,
         finance,
+        products,
         ...billData
       } = createBillDto;
   
-      // Create the bill first
-      const bill = new this.billModel(billData);
+      // Create the bill
+      const bill = new this.billModel({ ...billData, products });
       await bill.save({ session });
   
-      // Create finance entry if isFinance flag is true
       if (isFinance && finance) {
+        // Extract product_ids from the products array
+        const productIds = products.map(p => p.product_id);
+  
         const financeData = {
           ...finance,
           bill_id: bill._id,
+          product_id: productIds,
         };
   
         const financeEntry = new this.financeModel(financeData);
         await financeEntry.save({ session });
   
-        // Optionally: store financeId in bill document
-        // If needed, add a `finance_id` field in your Bill schema
         bill.finance_id = financeEntry._id as ObjectId;
         await bill.save({ session });
       }
@@ -116,7 +145,7 @@ export class BillService {
   
   async getBillById() {
     try {
-      const bill = await this.billModel.find().populate('finance_id').lean();
+      const bill = await this.billModel.find().populate(['finance_id','finance_id.product_id']).lean();
   
       if (!bill) {
         throw new NotFoundException('Bill not found');

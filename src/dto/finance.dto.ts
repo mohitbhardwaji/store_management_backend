@@ -1,5 +1,6 @@
-import { IsNotEmpty, IsNumber, IsPositive, IsMongoId, Min, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsPositive, IsMongoId, Min, IsOptional, IsArray } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
+import { Type } from 'class-transformer';
 export class CreateFinanceDto {
   @IsNotEmpty()
   financerName: string;
@@ -28,7 +29,10 @@ export class CreateFinanceDto {
   stock_id: string;
 
   @IsOptional()
-  product_id: string;
+  @IsArray()
+  @IsMongoId({ each: true })
+  @Type(() => String)
+  product_id: string[];
 }
 
 

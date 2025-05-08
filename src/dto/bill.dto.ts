@@ -11,7 +11,19 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateFinanceDto } from '../dto/finance.dto';
+class PaymentDto {
+  @IsString()
+  @IsOptional()
+  mode?: string;
 
+  @IsNumber()
+  @IsOptional()
+  amount?: number;
+
+  @IsString()
+  @IsOptional()
+  transactionId?: string;
+}
 export class CreateBillDto {
   @IsString()
   @IsOptional()
@@ -74,9 +86,23 @@ export class CreateBillDto {
   @Type(() => CreateFinanceDto)
   @IsOptional()
   finance?: CreateFinanceDto;
+
+  @ValidateNested()
+@Type(() => PaymentDto)
+@IsOptional()
+payment1?: PaymentDto;
+
+@ValidateNested()
+@Type(() => PaymentDto)
+@IsOptional()
+payment2?: PaymentDto;
 }
 
 class BillProductDto {
+  @IsOptional()
+  @IsMongoId()
+  product_id?: string;
+
   @IsString()
   productNumber: string;
 
