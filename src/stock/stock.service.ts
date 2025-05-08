@@ -17,7 +17,87 @@ export class StockService {
   ) { }
 
 
-  async getStock(stockId?: string) {
+  // async getStock(stockId?: string) {
+  //   if (stockId) {
+  //     // ======== Get single stock by ID ========
+  //     const stock = await this.stockModel.findById(stockId).lean();
+  //     if (!stock) throw new NotFoundException('Stock not found');
+  
+  //     const product = await this.productModel.findById(stock.product_id).lean();
+  //     if (!product) throw new NotFoundException('Product not found for stock');
+  
+  //     const soldData = await this.billModel.aggregate([
+  //       { $match: { formType: { $in: ['Order Form', 'Invoice'] } } },
+  //       { $unwind: '$products' },
+  //       { $match: { 'products.productNumber': product.productNumber } },
+  //       {
+  //         $group: {
+  //           _id: '$products.productNumber',
+  //           totalSold: { $sum: '$products.quantity' },
+  //         },
+  //       },
+  //     ]);
+  
+  //     const soldUnits = soldData.length > 0 ? soldData[0].totalSold : 0;
+  
+  //     return {
+  //       stockId: stock._id,
+  //       product,
+  //       currentStock: stock.current_quantity,
+  //       soldUnits,
+  //       availableUnits: stock.current_quantity - soldUnits,
+  //       stockHistory: stock.history,
+  //       vendor: stock.vendor,
+  //       updatedAt: stock.updated_at,
+  //     };
+  //   }
+  
+  //   // ======== Get ALL stocks ========
+  //   const stocks = await this.stockModel.find().lean();
+  
+  //   const productIds = stocks.map((s) => s.product_id);
+  //   const products = await this.productModel.find({ _id: { $in: productIds } }).lean();
+  
+  //   // Map productId -> product
+  //   const productMap = new Map(products.map((p) => [p._id.toString(), p]));
+  
+  //   const productNumbers = products.map((p) => p.productNumber);
+  
+  //   const soldData = await this.billModel.aggregate([
+  //     { $match: { formType: { $in: ['Order Form', 'Invoice'] } } },
+  //     { $unwind: '$products' },
+  //     { $match: { 'products.productNumber': { $in: productNumbers } } },
+  //     {
+  //       $group: {
+  //         _id: '$products.productNumber',
+  //         totalSold: { $sum: '$products.quantity' },
+  //       },
+  //     },
+  //   ]);
+  
+  //   const soldMap = new Map(soldData.map((item) => [item._id, item.totalSold]));
+  
+  //   const result = stocks.map((stock) => {
+  //     const product = productMap.get(stock.product_id.toString());
+  //     const soldUnits = soldMap.get(product?.productNumber) || 0;
+  
+  //     return {
+  //       stockId: stock._id,
+  //       product,
+  //       currentStock: stock.current_quantity,
+  //       soldUnits,
+  //       availableUnits: stock.current_quantity - soldUnits,
+  //       stockHistory: stock.history,
+  //       vendor: stock.vendor,
+  //       updatedAt: stock.updated_at,
+  //     };
+  //   });
+  
+  //   return result;
+  // }
+  
+
+  async getStock(stockId?: string, searchQuery?: string, page = 1, limit = 10) {
     if (stockId) {
       // ======== Get single stock by ID ========
       const stock = await this.stockModel.findById(stockId).lean();
@@ -52,17 +132,35 @@ export class StockService {
       };
     }
   
-    // ======== Get ALL stocks ========
-    const stocks = await this.stockModel.find().lean();
+    // ======== Get ALL stocks (with pagination and search) ========
   
-    const productIds = stocks.map((s) => s.product_id);
-    const products = await this.productModel.find({ _id: { $in: productIds } }).lean();
+    // 1. Find matching products first
+    let productFilter: any = {};
+    console.log({searchQuery});
+    
+    if (searchQuery) {
+      productFilter.productNumber = { $regex: searchQuery, $options: 'i' };
+    }
   
-    // Map productId -> product
-    const productMap = new Map(products.map((p) => [p._id.toString(), p]));
+    const matchingProducts = await this.productModel.find(productFilter).lean();
+    const matchingProductIds = matchingProducts.map((p) => p._id);
+    const productMap = new Map(matchingProducts.map((p) => [p._id.toString(), p]));
+    const productNumbers = matchingProducts.map((p) => p.productNumber);
   
-    const productNumbers = products.map((p) => p.productNumber);
+    // 2. Pagination setup
+    const skip = (page - 1) * limit;
   
+    // 3. Get stocks for those products
+    const [stocks, total] = await Promise.all([
+      this.stockModel
+        .find({ product_id: { $in: matchingProductIds } })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.stockModel.countDocuments({ product_id: { $in: matchingProductIds } }),
+    ]);
+  
+    // 4. Get sold data
     const soldData = await this.billModel.aggregate([
       { $match: { formType: { $in: ['Order Form', 'Invoice'] } } },
       { $unwind: '$products' },
@@ -77,6 +175,7 @@ export class StockService {
   
     const soldMap = new Map(soldData.map((item) => [item._id, item.totalSold]));
   
+    // 5. Compose final result
     const result = stocks.map((stock) => {
       const product = productMap.get(stock.product_id.toString());
       const soldUnits = soldMap.get(product?.productNumber) || 0;
@@ -93,7 +192,13 @@ export class StockService {
       };
     });
   
-    return result;
+    return {
+      data: result,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
   
   

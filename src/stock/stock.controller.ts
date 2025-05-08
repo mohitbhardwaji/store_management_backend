@@ -19,7 +19,7 @@ export class StockController {
     @Query('limit') limit = 10,
     @Query('stock_id') stock_id: string, // <-- Accept stock_id as query param
   ) {
-    return this.stockService.getStock(stock_id);
+    return this.stockService.getStock(stock_id,searchQuery,page, limit);
   }
 
 
