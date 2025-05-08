@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsPositive, IsMongoId, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsPositive, IsMongoId, Min, IsOptional } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
 export class CreateFinanceDto {
   @IsNotEmpty()
@@ -24,8 +24,11 @@ export class CreateFinanceDto {
   @Min(0)
   priceAfterFinance: number;
 
-  @IsMongoId()
+  @IsOptional()
   stock_id: string;
+
+  @IsOptional()
+  product_id: string;
 }
 
 

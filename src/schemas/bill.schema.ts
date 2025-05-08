@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type BillDocument = Bill & Document;
 
@@ -96,7 +96,11 @@ export class Bill {
     transactionId?: string;
   };
 
+  @Prop({ type: Types.ObjectId, ref: 'Finance' })
+  finance_id?: Types.ObjectId;
+
 
 }
 
 export const BillSchema = SchemaFactory.createForClass(Bill);
+

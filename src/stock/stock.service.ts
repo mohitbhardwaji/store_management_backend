@@ -342,6 +342,125 @@ export class StockService {
   
 
 
+  // async importStock(filePath: string, filter: { stock_date: string }) {
+  //   try {
+  //     const workbook = XLSX.readFile(filePath);
+  //     const sheetName = workbook.SheetNames[0];
+  //     const worksheet = workbook.Sheets[sheetName];
+  //     const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+  
+  //     const headers = rows[0] as string[];
+  //     const dataRows = rows.slice(1);
+  //     const stockInDate = new Date(filter.stock_date);
+  
+  //     const stocksToInsert: {
+  //       product_id: string;
+  //       current_quantity: number;
+  //       current_stock_in_date: Date;
+  //       vendor: string;
+  //       history: {
+  //         quantity: number;
+  //         stock_in_date: Date;
+  //         updated_at: Date;
+  //       }[];
+  //     }[] = [];
+  
+  //     const newlyCreatedProducts: string[] = [];
+  //     const skippedDuplicates: any[] = [];
+  //     const invalidRows: any[] = [];
+  
+  //     for (const rawRow of dataRows) {
+  //       const [productNumberRaw, quantityRaw, rateRaw, gstRaw] = rawRow as [unknown, unknown, unknown, unknown];
+  
+  //       const productNumber = productNumberRaw?.toString().trim();
+  //       const quantity = Number(quantityRaw) || 0;
+  //       const rate = Number(rateRaw) || 0;
+  //       const gst = Number(gstRaw) || 0;
+  
+  //       // Collect invalid records
+  //       if (!productNumber) {
+  //         invalidRows.push({ reason: 'Missing product number or invalid quantity', row: rawRow });
+  //         continue;
+  //       }
+  
+  //       // Check if product exists or create
+  //       let product = await this.productModel.findOne({ productNumber });
+  
+  //       if (!product) {
+  //         try {
+  //           product = await this.productModel.create({
+  //             productNumber,
+  //             category: 'Default',
+  //             subcategory: 'Default',
+  //             rate,
+  //             gst,
+  //           });
+  //           newlyCreatedProducts.push(productNumber);
+  //         } catch (err) {
+  //           invalidRows.push({ reason: 'Failed to create product', row: rawRow, error: err.message });
+  //           continue;
+  //         }
+  //       } else {
+  //         // Update rate and gst
+  //         await this.productModel.updateOne({ productNumber }, { $set: { rate, gst } });
+  //       }
+  
+  //       // Check for duplicate stock
+  //       const existingStock = await this.stockModel.findOne({
+  //         product_id: product._id,
+  //         current_stock_in_date: stockInDate,
+  //       });
+  
+  //       if (existingStock) {
+  //         skippedDuplicates.push({ reason: 'Duplicate stock', row: rawRow });
+  //         continue;
+  //       }
+  
+  //       // Prepare stock entry
+  //       const stockData = {
+  //         product_id: product.id.toString(),
+  //         current_quantity: quantity,
+  //         current_stock_in_date: stockInDate,
+  //         vendor: 'Default Vendor',
+  //         history: [
+  //           {
+  //             quantity,
+  //             stock_in_date: stockInDate,
+  //             updated_at: new Date(),
+  //           },
+  //         ],
+  //       };
+  
+  //       stocksToInsert.push(stockData);
+  //     }
+  
+  //     // No valid stock rows to insert
+  //     if (stocksToInsert.length === 0) {
+  //       fs.unlinkSync(filePath);
+  //       throw new BadRequestException('No valid stock records to insert.');
+  //     }
+  
+  //     // Insert stock entries
+  //     const result = await this.stockModel.insertMany(stocksToInsert);
+  
+  //     // Remove file
+  //     fs.unlinkSync(filePath);
+  
+  //     return {
+  //       message: 'Stock import completed',
+  //       inserted: result.length,
+  //       newProducts: newlyCreatedProducts,
+  //       skippedDuplicates,
+  //       invalidRows,
+  //     };
+  //   } catch (error) {
+  //     console.error('Import stock error:', error);
+  //     throw new BadRequestException('Failed to import stock: ' + error.message);
+  //   }
+  // }
+  
+
+
   async importStock(filePath: string, filter: { stock_date: string }) {
     try {
       const workbook = XLSX.readFile(filePath);
@@ -349,43 +468,29 @@ export class StockService {
       const worksheet = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
   
-      const headers = rows[0] as string[];
       const dataRows = rows.slice(1);
       const stockInDate = new Date(filter.stock_date);
   
-      const stocksToInsert: {
-        product_id: string;
-        current_quantity: number;
-        current_stock_in_date: Date;
-        vendor: string;
-        history: {
-          quantity: number;
-          stock_in_date: Date;
-          updated_at: Date;
-        }[];
-      }[] = [];
-  
       const newlyCreatedProducts: string[] = [];
-      const skippedDuplicates: any[] = [];
+      const updatedStocks: string[] = [];
+      const insertedStocks: string[] = [];
       const invalidRows: any[] = [];
   
       for (const rawRow of dataRows) {
         const [productNumberRaw, quantityRaw, rateRaw, gstRaw] = rawRow as [unknown, unknown, unknown, unknown];
   
         const productNumber = productNumberRaw?.toString().trim();
-        const quantity = Number(quantityRaw) || 0;
-        const rate = Number(rateRaw) || 0;
-        const gst = Number(gstRaw) || 0;
+        const quantity = isNaN(Number(quantityRaw)) ? 0 : Number(quantityRaw);
+        const rate = isNaN(Number(rateRaw)) ? 0 : Number(rateRaw);
+        const gst = isNaN(Number(gstRaw)) ? 0 : Number(gstRaw);
   
-        // Collect invalid records
-        if (!productNumber) {
-          invalidRows.push({ reason: 'Missing product number or invalid quantity', row: rawRow });
+        if (!productNumber ) {
+          invalidRows.push({ reason: 'Invalid product number or quantity', row: rawRow });
           continue;
         }
   
-        // Check if product exists or create
+        // 1. Find or Create Product
         let product = await this.productModel.findOne({ productNumber });
-  
         if (!product) {
           try {
             product = await this.productModel.create({
@@ -401,56 +506,57 @@ export class StockService {
             continue;
           }
         } else {
-          // Update rate and gst
           await this.productModel.updateOne({ productNumber }, { $set: { rate, gst } });
         }
   
-        // Check for duplicate stock
+        // 2. Check for existing stock entry
         const existingStock = await this.stockModel.findOne({
           product_id: product._id,
-          current_stock_in_date: stockInDate,
         });
   
         if (existingStock) {
-          skippedDuplicates.push({ reason: 'Duplicate stock', row: rawRow });
-          continue;
-        }
-  
-        // Prepare stock entry
-        const stockData = {
-          product_id: product.id.toString(),
-          current_quantity: quantity,
-          current_stock_in_date: stockInDate,
-          vendor: 'Default Vendor',
-          history: [
+          // Update quantity and add to history
+          await this.stockModel.updateOne(
+            { _id: existingStock._id },
             {
-              quantity,
-              stock_in_date: stockInDate,
-              updated_at: new Date(),
-            },
-          ],
-        };
-  
-        stocksToInsert.push(stockData);
+              $inc: { current_quantity: quantity },
+              $push: {
+                history: {
+                  quantity,
+                  stock_in_date: stockInDate,
+                  updated_at: new Date(),
+                },
+              },
+              $set: { updated_at: new Date() },
+            }
+          );
+          updatedStocks.push(productNumber);
+        } else {
+          // Insert new stock document
+          await this.stockModel.create({
+            product_id: product._id,
+            current_quantity: quantity,
+            current_stock_in_date: stockInDate,
+            vendor: 'Default Vendor',
+            history: [
+              {
+                quantity,
+                stock_in_date: stockInDate,
+                updated_at: new Date(),
+              },
+            ],
+          });
+          insertedStocks.push(productNumber);
+        }
       }
   
-      // No valid stock rows to insert
-      if (stocksToInsert.length === 0) {
-        fs.unlinkSync(filePath);
-        throw new BadRequestException('No valid stock records to insert.');
-      }
-  
-      // Insert stock entries
-      const result = await this.stockModel.insertMany(stocksToInsert);
-  
-      // Remove file
       fs.unlinkSync(filePath);
   
       return {
         message: 'Stock import completed',
-        inserted: result.length,
         newProducts: newlyCreatedProducts,
-        skippedDuplicates,
+        insertedStocks,
+        updatedStocks,
         invalidRows,
       };
     } catch (error) {

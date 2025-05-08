@@ -1,19 +1,88 @@
 // src/bill/bill.service.ts
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Bill } from '../schemas/bill.schema';
 import mongoose, { Model } from 'mongoose';
 import { CreateBillDto } from '../dto/bill.dto';
 import { ObjectId } from 'bson';
+import { Finance } from 'src/schemas/finance.schema';
 @Injectable()
 export class BillService {
-  constructor(@InjectModel(Bill.name) private billModel: Model<Bill>) {}
+  constructor(@InjectModel(Bill.name) private billModel: Model<Bill>,@InjectModel(Finance.name) private readonly financeModel: Model<Finance>) {}
 
 
-  async createBill(body){
-    const createdBill = new this.billModel(body);
-    return createdBill.save();
+  // async createBill(createBillDto: CreateBillDto): Promise<Bill> {
+  //   const bill = new this.billModel(createBillDto);
+  //   const savedBill = await bill.save();
+  
+  //   // Now create finance entry if needed
+  //   const financeData = {
+  //     financerName: 'Default Financer', // or from DTO
+  //     downpayment: 10000,
+  //     emiTenure: 12,
+  //     roi: 12.5,
+  //     discount: 0,
+  //     priceAfterFinance: createBillDto.totalAmount,
+  //     product_id: createBillDto.product_id,
+  //     bill_id: savedBill._id,
+  //   };
+  
+  //   const createdFinance = await this.financeModel.create(financeData);
+  
+  //   // Update the saved bill with finance_id
+  //   savedBill.finance_id = createdFinance._id;
+  //   await savedBill.save();
+  
+  //   return savedBill;
+  // }
+  
+
+  async createBill(createBillDto: CreateBillDto) {
+    const session = await this.billModel.db.startSession();
+    session.startTransaction();
+  
+    try {
+      const {
+        isFinance,
+        finance,
+        ...billData
+      } = createBillDto;
+  
+      // Create the bill first
+      const bill = new this.billModel(billData);
+      await bill.save({ session });
+  
+      // Create finance entry if isFinance flag is true
+      if (isFinance && finance) {
+        const financeData = {
+          ...finance,
+          bill_id: bill._id,
+        };
+  
+        const financeEntry = new this.financeModel(financeData);
+        await financeEntry.save({ session });
+  
+        // Optionally: store financeId in bill document
+        // If needed, add a `finance_id` field in your Bill schema
+        bill.finance_id = financeEntry._id as ObjectId;
+        await bill.save({ session });
+      }
+  
+      await session.commitTransaction();
+      session.endSession();
+  
+      return {
+        message: 'Bill created successfully',
+        billId: bill._id,
+      };
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      console.error('Error creating bill with finance:', error);
+      throw new BadRequestException('Failed to create bill: ' + error.message);
+    }
   }
+  
 
   async getBillsByUser(query) {
     try {
@@ -45,24 +114,21 @@ export class BillService {
   }
   
   
-  async getBillById(billId: string) {
+  async getBillById() {
     try {
-      console.log("got api call",billId)
-      if (!billId) {
-        throw new Error('Bill id is undefined');
-      }
-      const bill = await this.billModel.findOne({ _id: billId });
-      console.log({bill})
+      const bill = await this.billModel.find().populate('finance_id').lean();
+  
       if (!bill) {
-        throw new Error('Bill not found or access denied');
+        throw new NotFoundException('Bill not found');
       }
-    
-      return bill;
+  
+      return bill
     } catch (error) {
-      throw new BadRequestException(error.message)
+      console.error('Error fetching bill:', error);
+      throw new BadRequestException('Failed to fetch bill: ' + error.message);
     }
-   
   }
+  
 
   async updateBill(billId, body: Partial<Bill>) {
     try {

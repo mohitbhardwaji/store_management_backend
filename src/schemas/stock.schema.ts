@@ -61,7 +61,7 @@ export class Stock  {
   @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
   product_id: Types.ObjectId;
 
-  @Prop({ required: false})
+  @Prop({ required: false,default:0 })
   current_quantity: number;
 
   @Prop({ default: Date.now })
@@ -70,7 +70,7 @@ export class Stock  {
   @Prop({
     type: [
       {
-        quantity: { type: Number, required: false },
+        quantity: { type: Number,default:0, required: false },
         stock_in_date: { type: Date, required: false },
         updated_at: { type: Date, required: false },
       },

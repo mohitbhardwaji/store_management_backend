@@ -21,8 +21,11 @@ export class Finance extends Document {
   @Prop({ required: true, min: 0 })
   priceAfterFinance: number;
 
-  @Prop({ type: Types.ObjectId, ref: 'Stock', required: true })
-  stock_id: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
+  product_id: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Bill', required: true })
+  bill_id: Types.ObjectId;
 
   @Prop({ default: false })
   isDeleted: boolean;
