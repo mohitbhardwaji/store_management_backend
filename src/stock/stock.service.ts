@@ -118,23 +118,53 @@ export class StockService {
   //   return stock;
   // }
 
-  async searchStocks(searchQuery: string){
-    try{let query = {};
+  // async searchStocks(searchQuery: string){
+  //   try{let query = {};
   
-    if (searchQuery) {
-      query = {
-        productNumber: { $regex: searchQuery, $options: 'i' },
-      };
+  //   if (searchQuery) {
+  //     query = {
+  //       productNumber: { $regex: searchQuery, $options: 'i' },
+  //     };
+  //   }
+
+  //   const res = await this.productModel.find(query)
+
+  //   return res
+  // }catch(err){
+  //   throw new BadRequestException(err.message);
+  // } 
+  
+  // }
+
+
+
+
+  async searchStocks(searchQuery: string) {
+    try {
+      const pipeline: any[] = [
+        {
+          $lookup: {
+            from: 'products', // your actual collection name
+            localField: 'product_id',
+            foreignField: '_id',
+            as: 'product',
+          },
+        },
+        { $unwind: '$product' }, // Flatten the joined array
+        {
+          $match: {
+            'product.productNumber': { $regex: searchQuery, $options: 'i' },
+          },
+        },
+      ];
+  
+      const result = await this.stockModel.aggregate(pipeline);
+      return result;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
-
-    const res = await this.productModel.find(query)
-
-    return res
-  }catch(err){
-    throw new BadRequestException(err.message);
-  } 
-  
   }
+  
   
   async updateStock(id: string, updateStockDto: UpdateStockDto) {
     const updatedStock = await this.stockModel.findByIdAndUpdate(
