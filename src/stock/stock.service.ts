@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Stock, StockDocument } from '../schemas/stock.schema';
@@ -17,83 +17,51 @@ export class StockService {
   ) { }
 
 
-  // async getStocks(id: string, searchQuery: string, page: number, limit: number) {
-  //   if (id) {
-  //     const product = await this.stockModel.findById(id);
-  //     if (!product) {
-  //       throw new Error('Product not found');
-  //     }
+  async getStockById(stockId: string) {
+    // 1. Fetch stock entry by ID
+    const stock = await this.stockModel.findById(stockId).lean();
+    if (!stock) throw new NotFoundException('Stock not found');
   
-  //     // Calculate soldUnits for this product from specific formTypes
-  //     const soldData = await this.billModel.aggregate([
-  //       { $match: { formType: { $in: ['Order Form', 'Invoice'] } } },
-  //       { $unwind: '$products' },
-  //       { $match: { 'products.productNumber': product.productNumber } },
-  //       {
-  //         $group: {
-  //           _id: '$products.productNumber',
-  //           totalSold: { $sum: '$products.quantity' },
-  //         },
-  //       },
-  //     ]);
+    // 2. Fetch associated product details (assuming `product_id` references `ProductModel`)
+    const product = await this.productModel.findById(stock.product_id).lean();
+    if (!product) throw new NotFoundException('Product not found for stock');
   
-  //     const soldUnits = soldData.length > 0 ? soldData[0].totalSold : 0;
+    // 3. Find all sold units by matching productNumber in bill products
+    const soldData = await this.billModel.aggregate([
+      {
+        $match: {
+          formType: { $in: ['Order Form', 'Invoice'] },
+        },
+      },
+      { $unwind: '$products' },
+      {
+        $match: {
+          'products.productNumber': product.productNumber,
+        },
+      },
+      {
+        $group: {
+          _id: '$products.productNumber',
+          totalSold: { $sum: '$products.quantity' },
+        },
+      },
+    ]);
+    console.log({soldData});
+    
+    const soldUnits = soldData.length > 0 ? soldData[0].totalSold : 0;
   
-  //     return {
-  //       product,
-  //       soldUnits,
-  //       availableUnits: product.unit,
-  //     };
-  //   }
+    return {
+      stockId: stock._id,
+      product,
+      currentStock: stock.current_quantity,
+      soldUnits,
+      availableUnits: stock.current_quantity - soldUnits,
+      stockHistory: stock.history,
+      vendor: stock.vendor,
+      updatedAt: stock.updated_at,
+    };
+  }
   
-  //   // Normal search + pagination
-  //   let query = {};
-  //   if (searchQuery) {
-  //     query = {
-  //       productNumber: { $regex: searchQuery, $options: 'i' },
-  //     };
-  //   }
-  
-  //   const skip = (page - 1) * limit;
-  
-  //   const [stocks, total] = await Promise.all([
-  //     this.stockModel.find(query).skip(skip).limit(limit).lean(),
-  //     this.stockModel.countDocuments(query),
-  //   ]);
-  
-  //   const productNumbers = stocks.map((s) => s.productNumber);
-  
-  //   // Only count sold units for Order Form and Invoice
-  //   const soldData = await this.billModel.aggregate([
-  //     { $match: { formType: { $in: ['Order Form', 'Invoice'] } } },
-  //     { $unwind: '$products' },
-  //     { $match: { 'products.productNumber': { $in: productNumbers } } },
-  //     {
-  //       $group: {
-  //         _id: '$products.productNumber',
-  //         totalSold: { $sum: '$products.quantity' },
-  //       },
-  //     },
-  //   ]);
-  
-  //   const soldMap = soldData.reduce((acc, item) => {
-  //     acc[item._id] = item.totalSold;
-  //     return acc;
-  //   }, {} as Record<string, number>);
-  
-  //   const updatedStocks = stocks.map((stock) => ({
-  //     ...stock,
-  //     soldUnits: soldMap[stock.productNumber] || 0,
-  //   }));
-  
-  //   return {
-  //     stocks: updatedStocks,
-  //     total,
-  //     page,
-  //     limit,
-  //     totalPages: Math.ceil(total / limit),
-  //   };
-  // }
   
   //api for addding single stock by adding history and updating stock quantity
   //update ,softdelete,products
