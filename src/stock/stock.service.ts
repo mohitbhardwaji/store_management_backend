@@ -98,6 +98,8 @@ export class StockService {
   
 
   async getStock(stockId?: string, searchQuery?: string, page = 1, limit = 10) {
+    console.log({ stockId, searchQuery, page, limit });
+    
     if (stockId) {
       // ======== Get single stock by ID ========
       const stock = await this.stockModel.findById(stockId).lean();

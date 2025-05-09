@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Patch, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, DefaultValuePipe, Get, ParseIntPipe, Patch, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { StockService } from './stock.service';
 import { CreateStockDto, UpdateStockDto } from '../dto/stock.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -15,8 +15,8 @@ export class StockController {
   @Get('/getstock')
   async getStocks(
     @Query('search') searchQuery: string,
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+  @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query('stock_id') stock_id: string, // <-- Accept stock_id as query param
   ) {
     return this.stockService.getStock(stock_id,searchQuery,page, limit);
