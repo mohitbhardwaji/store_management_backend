@@ -4,6 +4,8 @@ import {
     IsOptional,
     IsDateString,
     IsArray,
+    isBoolean,
+    IsBoolean,
   } from 'class-validator';
   
   export class CreateStockDto {
@@ -40,6 +42,9 @@ import {
   
     @IsNumber()
     mrp: number;
+
+    @IsNumber()
+  current_quantity : number;
   
     @IsNumber()
     offer_price: number;
@@ -52,6 +57,12 @@ import {
   
     @IsDateString()
     stock_in_date: string;
+
+    @IsDateString()
+    current_stock_in_date: string;
+
+    @IsBoolean()
+    isDeleted: boolean = false;
   }
   
 
@@ -64,29 +75,6 @@ import {
     values: string[];
   }
 
-  export class UpdateStockDto {
-    @IsOptional()
-    @IsString()
-    productNumber?: string;
-  
-    @IsOptional()
-    @IsString()
-    product_group?: string;
-  
-    @IsOptional()
-    @IsString()
-    vendor?: string;
-  
-    @IsOptional()
-    @IsNumber()
-    mrp?: number;
-  
-    @IsOptional()
-    @IsNumber()
-    offer_price?: number;
-  
-    @IsOptional()
-    @IsNumber()
-    gst?: number;
-  
+  export class UpdateStockDto  extends CreateStockDto {
+    
   }

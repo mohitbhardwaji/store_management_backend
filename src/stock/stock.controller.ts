@@ -1,9 +1,10 @@
-import { BadRequestException, Body, Controller, DefaultValuePipe, Get, ParseIntPipe, Patch, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Patch, Post, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { StockService } from './stock.service';
 import { CreateStockDto, UpdateStockDto } from '../dto/stock.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { Types } from 'mongoose';
 
 // @UseGuards(JwtAuthGuard)
 @Controller('stocks')
@@ -30,13 +31,13 @@ export class StockController {
     return this.stockService.searchStocks(searchQuery);
   }
   
-  @Patch('/updatestock')
-  async updateStock(
-    @Query('id') id: string,
-    @Body() updateStockDto: UpdateStockDto,
-  ) {
-    return this.stockService.updateStock(id, updateStockDto);
-  }
+  // @Patch('/updatestock')
+  // async updateStock(
+  //   @Query('id') id: string,
+  //   @Body() updateStockDto: UpdateStockDto,
+  // ) {
+  //   return this.stockService.updateStock(id, updateStockDto);
+  // }
 
   @Post('/importStock')
   @UseInterceptors(
@@ -58,6 +59,17 @@ export class StockController {
   async importStock(@UploadedFile() file,@Body() request) {
     const filter = request
     return this.stockService.importStock(file.path,filter);
+  }
+
+  @Put('update-stock/:id')
+  async updateStock(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateStockDto,
+  ) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Invalid stock ID');
+    }
+    return this.stockService.updateStock(id, updateDto);
   }
   
 }

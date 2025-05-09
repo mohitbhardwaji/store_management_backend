@@ -2,7 +2,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Bill } from '../schemas/bill.schema';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { isValidObjectId, Model } from 'mongoose';
 import { CreateBillDto } from '../dto/bill.dto';
 import { ObjectId } from 'bson';
 import { Finance } from 'src/schemas/finance.schema';
@@ -215,5 +215,25 @@ export class BillService {
       console.error('Error fetching bills:', error);
       throw new InternalServerErrorException('Failed to fetch bills');
     }
+  }
+
+  async updatePaidStatus(billId: string, isPaid: boolean) {
+    if (!isValidObjectId(billId)) {
+      throw new BadRequestException('Invalid bill ID format');
+    }
+
+    const bill = await this.billModel.findById(billId);
+    if (!bill) {
+      throw new NotFoundException(`Bill with ID ${billId} not found`);
+    }
+
+    bill.isPaid = isPaid;
+    await bill.save();
+
+    return {
+      message: `Bill marked as ${isPaid ? 'paid' : 'unpaid'}`,
+      billId: bill._id,
+      isPaid: bill.isPaid,
+    };
   }
 }

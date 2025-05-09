@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Stock, StockDocument } from '../schemas/stock.schema';
@@ -275,19 +275,19 @@ export class StockService {
   }
   
   
-  async updateStock(id: string, updateStockDto: UpdateStockDto) {
-    const updatedStock = await this.stockModel.findByIdAndUpdate(
-      id,
-      updateStockDto,
-      { new: true },
-    );
+  // async updateStock(id: string, updateStockDto: UpdateStockDto) {
+  //   const updatedStock = await this.stockModel.findByIdAndUpdate(
+  //     id,
+  //     updateStockDto,
+  //     { new: true },
+  //   );
 
-    if (!updatedStock) {
-      throw new Error('Product not found');
-    }
+  //   if (!updatedStock) {
+  //     throw new Error('Product not found');
+  //   }
 
-    return updatedStock;
-  }
+  //   return updatedStock;
+  // }
   
   // async importStock(filePath, filter) {
   //   try {
@@ -704,5 +704,50 @@ export class StockService {
     }
   }
   
-  
+
+// src/stock/stock.service.ts
+// src/stock/stock.service.ts
+async updateStock(stockId: string, updateDto: UpdateStockDto) {
+  const stock = await this.stockModel.findById(stockId);
+  if (!stock) {
+    throw new NotFoundException('Stock not found');
+  }
+
+  try {
+    const now = new Date();
+
+    if (updateDto.current_quantity !== undefined) {
+      const stockInDate = updateDto.current_stock_in_date || now;
+
+      // Push to history
+      stock.history.push({
+        quantity: updateDto.current_quantity,
+        stock_in_date: typeof stockInDate === 'string' ? new Date(stockInDate) : stockInDate,
+        updated_at: now,
+      });
+
+      // Increment current quantity
+      stock.current_quantity += updateDto.current_quantity;
+
+      // Always update current stock in date to now or provided one
+      stock.current_stock_in_date = typeof stockInDate === 'string' ? new Date(stockInDate) : stockInDate;
+    }
+
+    if (updateDto.vendor !== undefined) {
+      stock.vendor = updateDto.vendor;
+    }
+
+    if (updateDto.isDeleted !== undefined) {
+      stock.isDeleted = updateDto.isDeleted;
+    }
+
+    stock.updated_at = now;
+    return await stock.save();
+  } catch (error) {
+    console.error('Update failed:', error);
+    throw new InternalServerErrorException('Failed to update stock');
+  }
+}
+
+
 }

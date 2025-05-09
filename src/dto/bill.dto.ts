@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateFinanceDto } from '../dto/finance.dto';
+import { PartialType } from '@nestjs/mapped-types';
 class PaymentDto {
   @IsString()
   @IsOptional()
@@ -96,6 +97,10 @@ payment1?: PaymentDto;
 @Type(() => PaymentDto)
 @IsOptional()
 payment2?: PaymentDto;
+
+@IsBoolean()
+@IsOptional()
+isPaid: boolean = false;
 }
 
 class BillProductDto {
@@ -135,3 +140,5 @@ class BillProductDto {
   @IsNumber()
   gst?: number;
 }
+
+export class UpdateBillDto extends PartialType(CreateBillDto) {}

@@ -115,8 +115,8 @@ export class Bill {
   @Prop({ type: Types.ObjectId, ref: 'Finance' })
   finance_id?: Types.ObjectId;
 
-  // @Prop({ default: false })
-  // splitPaymentButton?: boolean;
+  @Prop({ default: false })
+  isPaid: boolean;
  
   
 

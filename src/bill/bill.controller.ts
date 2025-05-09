@@ -1,7 +1,7 @@
 // src/bill/bill.controller.ts
 import { Controller, Post, Body, Req, UseGuards, Get, Param, Patch, UsePipes, ValidationPipe, BadRequestException, Query, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
 import { BillService } from './bill.service';
-import { CreateBillDto } from '../dto/bill.dto';
+import { CreateBillDto, UpdateBillDto } from '../dto/bill.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request } from 'express';
 
@@ -55,5 +55,16 @@ export class BillController {
     console.log({formType});
     
     return this.billService.getBills(page, limit, formType,bill_id);
+  }
+
+  @Patch(':id/paid-status')
+  async updateBillPaidStatus(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateBillDto,
+  ) {
+    if (updateDto.isPaid === undefined) {
+      throw new BadRequestException('isPaid field is required');
+    }
+    return this.billService.updatePaidStatus(id, updateDto.isPaid);
   }
 }
