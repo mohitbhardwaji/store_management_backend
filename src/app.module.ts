@@ -8,6 +8,8 @@ import { StockModule } from './stock/stock.module';
 import { CoreModule } from './core/core.module';
 import { LoggerMiddleware } from './logger/logger.middleware';
 import { FinanceModule } from './finance/finance.module';
+import { ProductsController } from './products/products.controller';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -24,8 +26,9 @@ import { FinanceModule } from './finance/finance.module';
     StockModule,
     CoreModule,
     FinanceModule,
+    ProductsModule,
   ],
-  controllers: [],
+  controllers: [ProductsController],
   providers: [],
 })
 export class AppModule {
