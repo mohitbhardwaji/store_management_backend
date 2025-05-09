@@ -1,5 +1,5 @@
 // src/bill/bill.service.ts
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Bill } from '../schemas/bill.schema';
 import mongoose, { Model } from 'mongoose';
@@ -143,6 +143,7 @@ export class BillService {
   }
   
   
+  
   async getBillById() {
     try {
       const bill = await this.billModel.find().populate(['finance_id','finance_id.product_id']).lean();
@@ -176,6 +177,40 @@ export class BillService {
       return updatedBill;
     } catch (error) {
       throw new Error(`Failed to update bill: ${error.message}`,error.status);
+    }
+  }
+
+  async getBills(page: number, limit: number, formType?: string) {
+    const skip = (page - 1) * limit;
+
+    const filter: Record<string, any> = {};
+    if (formType) {
+      filter.formType = formType;
+    }
+
+    try {
+      const [bills, total] = await Promise.all([
+        this.billModel
+          .find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .lean(),
+        this.billModel.countDocuments(filter),
+      ]);
+      const totalBillsInspiteOfFormType = await this.billModel.countDocuments({});
+
+      return {
+        bills,
+        totalBills: total,
+        currentPage: page,
+        pageSize: limit,
+        totalPages: Math.ceil(total / limit),
+        totalBillsInspiteOfFormType: totalBillsInspiteOfFormType,
+      };
+    } catch (error) {
+      console.error('Error fetching bills:', error);
+      throw new InternalServerErrorException('Failed to fetch bills');
     }
   }
 }

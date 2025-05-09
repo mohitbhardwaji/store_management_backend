@@ -7,7 +7,7 @@ import { Bill, BillSchema } from '../schemas/bill.schema';
 import { Finance, FinanceSchema } from 'src/schemas/finance.schema';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Bill.name, schema: BillSchema },{ name: Finance.name, schema: FinanceSchema }])],
+  imports: [MongooseModule.forFeature([{ name: Bill.name, schema: BillSchema }, { name: Finance.name, schema: FinanceSchema }])],
   controllers: [BillController],
   providers: [BillService],
 })
