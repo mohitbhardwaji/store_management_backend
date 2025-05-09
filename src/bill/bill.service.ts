@@ -180,12 +180,15 @@ export class BillService {
     }
   }
 
-  async getBills(page: number, limit: number, formType?: string) {
+  async getBills(page: number, limit: number, formType?: string,bill_id?: string) {
     const skip = (page - 1) * limit;
 
     const filter: Record<string, any> = {};
     if (formType) {
       filter.formType = formType;
+    }
+    if (bill_id) {
+      filter._id = bill_id;
     }
 
     try {

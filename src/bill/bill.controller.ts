@@ -49,10 +49,11 @@ export class BillController {
   async getBills(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('bill_id') bill_id: string,
     @Query('formType') formType?: string,
   ) {
     console.log({formType});
     
-    return this.billService.getBills(page, limit, formType);
+    return this.billService.getBills(page, limit, formType,bill_id);
   }
 }
