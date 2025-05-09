@@ -191,7 +191,7 @@ export class BillService {
     try {
       const [bills, total] = await Promise.all([
         this.billModel
-          .find(filter)
+          .find(filter).populate(['finance_id','finance_id.product_id'])
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
