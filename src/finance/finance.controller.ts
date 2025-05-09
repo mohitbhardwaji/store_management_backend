@@ -9,10 +9,12 @@ import {
     HttpCode,
     HttpStatus,
     Query,
+    UseGuards,
   } from '@nestjs/common';
   import { FinanceService } from './finance.service';
   import { CreateFinanceDto,UpdateFinanceDto } from '../dto/finance.dto';
-  
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+  @UseGuards(JwtAuthGuard)
   @Controller('finance')
   export class FinanceController {
     constructor(private readonly financeService: FinanceService) {}

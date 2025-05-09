@@ -1,8 +1,9 @@
-import { BadRequestException, Body, Controller, NotFoundException, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, NotFoundException, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CreateProductDto, UpdateProductDto } from 'src/dto/products.dto';
 import { Product } from 'src/schemas/product.schema';
 import { ProductsService } from './products.service';
-
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+@UseGuards(JwtAuthGuard)
 @Controller('products')
 export class ProductsController {
     constructor(private readonly productService: ProductsService) {}

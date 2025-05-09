@@ -6,7 +6,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { Types } from 'mongoose';
 
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('stocks')
 export class StockController {
   constructor(private readonly stockService: StockService) {}
