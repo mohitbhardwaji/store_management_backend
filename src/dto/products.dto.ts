@@ -19,6 +19,10 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsNumber()
+  readonly cost_price?: number;
+
+  @IsOptional()
+  @IsNumber()
   readonly gst?: number;
 }
 

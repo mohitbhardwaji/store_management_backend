@@ -4,11 +4,13 @@ import {
     InternalServerErrorException,
     HttpException,
     HttpStatus,
+    BadRequestException,
   } from '@nestjs/common';
   import { InjectModel } from '@nestjs/mongoose';
   import { Model } from 'mongoose';
   import { Finance } from '../schemas/finance.schema';
   import { CreateFinanceDto ,UpdateFinanceDto} from '../dto/finance.dto';
+import { CalculateFinanceDto } from 'src/dto/calculate-finance.dto';
   
   @Injectable()
   export class FinanceService {
@@ -72,6 +74,39 @@ import {
       } catch (error) {
         if (error instanceof HttpException) throw error;
         throw new InternalServerErrorException('Failed to delete finance record');
+      }
+    }
+
+    calculatePriceAfterFinance(dto: CalculateFinanceDto): { priceAfterFinance: number } {
+      const { product_rate, downpayment, discount, emiTenure, roi } = dto;
+  
+      // Basic validation
+      if (downpayment + discount > product_rate) {
+        throw new BadRequestException('Downpayment + discount cannot exceed product rate');
+      }
+  
+      try {
+        const principal = product_rate - downpayment - discount;
+  
+        // Convert annual ROI% to monthly rate (decimal)
+        const monthlyRate = roi / 100 / 12;
+        const n = emiTenure;
+  
+        // EMI formula: E = P * r * (1 + r)^n / ((1 + r)^n - 1)
+        let totalPayment: number;
+        if (monthlyRate === 0) {
+          totalPayment = principal; // no interest
+        } else {
+          const factor = Math.pow(1 + monthlyRate, n);
+          const emi = (principal * monthlyRate * factor) / (factor - 1);
+          totalPayment = emi * n;
+        }
+  
+        return { priceAfterFinance: parseFloat(totalPayment.toFixed(2)) };
+      } catch (error) {
+        // Log for debugging
+        console.error('Finance calculation failed:', error);
+        throw new InternalServerErrorException('Failed to calculate finance price');
       }
     }
   }

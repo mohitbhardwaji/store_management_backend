@@ -616,11 +616,12 @@ export class StockService {
       const invalidRows: any[] = [];
   
       for (const rawRow of dataRows) {
-        const [productNumberRaw, quantityRaw, rateRaw, gstRaw] = rawRow as [unknown, unknown, unknown, unknown];
+        const [productNumberRaw, quantityRaw, rateRaw,cost_price_raw, gstRaw] = rawRow as [unknown, unknown,unknown, unknown, unknown];
   
         const productNumber = productNumberRaw?.toString().trim();
         const quantity = isNaN(Number(quantityRaw)) ? 0 : Number(quantityRaw);
         const rate = isNaN(Number(rateRaw)) ? 0 : Number(rateRaw);
+        const cost_price = isNaN(Number(cost_price_raw)) ? 0 : Number(cost_price_raw);
         const gst = isNaN(Number(gstRaw)) ? 0 : Number(gstRaw);
   
         if (!productNumber ) {
@@ -637,6 +638,7 @@ export class StockService {
               category: 'Default',
               subcategory: 'Default',
               rate,
+              cost_price,
               gst,
             });
             newlyCreatedProducts.push(productNumber);

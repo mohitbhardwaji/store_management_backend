@@ -18,6 +18,9 @@ export class Product {
   rate?: number;
 
   @Prop({ required: false })
+  cost_price?: number;
+
+  @Prop({ required: false })
   gst?: number;
 }
 
