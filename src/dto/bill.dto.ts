@@ -63,7 +63,7 @@ export class CreateBillDto {
   @IsOptional()
   deliveryDate?: Date;
 
-  @IsString()
+  @IsMongoId()
   @IsOptional()
   salesperson?: string;
 

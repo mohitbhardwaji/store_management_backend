@@ -10,6 +10,8 @@ import { LoggerMiddleware } from './logger/logger.middleware';
 import { FinanceModule } from './finance/finance.module';
 import { ProductsController } from './products/products.controller';
 import { ProductsModule } from './products/products.module';
+import { SalesExecutiveController } from './sales-executive/sales-executive.controller';
+import { SalesExecutiveModule } from './sales-executive/sales-executive.module';
 
 @Module({
   imports: [
@@ -27,8 +29,9 @@ import { ProductsModule } from './products/products.module';
     CoreModule,
     FinanceModule,
     ProductsModule,
+    SalesExecutiveModule,
   ],
-  controllers: [ProductsController],
+  controllers: [ProductsController, SalesExecutiveController],
   providers: [],
 })
 export class AppModule {

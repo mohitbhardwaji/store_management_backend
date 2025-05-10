@@ -5,7 +5,7 @@ import { CreateBillDto, UpdateBillDto } from '../dto/bill.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request } from 'express';
 
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @Controller('bill')
 export class BillController {
   constructor(private readonly billService: BillService) {}

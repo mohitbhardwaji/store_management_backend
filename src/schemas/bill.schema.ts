@@ -72,8 +72,8 @@ export class Bill {
   @Prop()
   deliveryDate?: Date;
 
-  @Prop()
-  salesperson?: string;
+  @Prop({ type: Types.ObjectId, ref: 'SalesExecutive' })
+  salesperson?: Types.ObjectId;
 
   @Prop({ default: false })
   partialPayment: boolean;
